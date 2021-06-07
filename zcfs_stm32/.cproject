@@ -95,7 +95,7 @@
                                     									
                                     <listOptionValue builtIn="false" value="../Drivers/CMSIS/Include"/>
                                     									
-                                    <listOptionValue builtIn="false" value="../Middlewares/Third_Party/ZCFS/src"/>
+                                    <listOptionValue builtIn="false" value="../Middlewares/Third_Party/ZCFS/include"/>
                                     								
                                 </option>
                                 								
