@@ -28,8 +28,6 @@ typedef struct __attribute__((__packed__)) inode_file{
 	uint32_t size;			/* size of the file 	 	 */
 } ifile_t;
 
-char* chunk_t;
-
 
 /*
  * Buffers: main buffer and buffer of the files
