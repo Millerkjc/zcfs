@@ -10,13 +10,12 @@
 
 #endif /* THIRD_PARTY_ZCFS_INCLUDE_FS_STRUCT_H_ */
 
-#define _INODE_LIST_LIMIT 1000
-#define _BUFFER_SIZE 32000 // 4/16/32 Kbyte - To be parameterized
+#include "fs_util.h"
+
 
 /*
- * Superblock and file inodes
+ * Superblock, file inodes and file chunks
  */
-
 /* Singleton Superblock */
 uint32_t superblock_t[_INODE_LIST_LIMIT];
 
@@ -29,15 +28,16 @@ typedef struct __attribute__((__packed__)) inode_file{
 	uint32_t size;			/* size of the file 	 	 */
 } ifile_t;
 
+char* chunk_t;
+
 
 /*
- * Buffers
+ * Buffers: main buffer and buffer of the files
  */
 typedef struct __attribute__((__packed__)) buffer_file{
 	uint32_t id;		/* file identifier    */
 	char *file_buffer;	/* buffer of the file */
 } bfile_t;
-
 
 // TODO change from list to another struct (es. tree, ...)
 typedef struct __attribute__((__packed__)) buffer{
@@ -45,8 +45,10 @@ typedef struct __attribute__((__packed__)) buffer{
 	uint32_t size;						/* size of the files */
 } main_buffer_t;
 
+
 /*
- * TODO
- * All methods for buffering data
+ * Memory location
  */
+
+uint32_t superblock_pointer_t = _UP_MEMORY_LIMIT - size(superblock_t);
 
