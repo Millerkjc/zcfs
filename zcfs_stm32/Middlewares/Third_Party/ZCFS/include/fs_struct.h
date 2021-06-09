@@ -14,19 +14,19 @@
 
 
 /*
- * Superblock, file inodes and file chunks
+ * Superblock and file inodes
  */
-/* Singleton Superblock */
-uint32_t superblock_t[_INODE_LIST_LIMIT];
-
 /* block per file: 4 + 16 + 4 + 4 + 4 = 32 byte */
 typedef struct __attribute__((__packed__)) inode_file{
-	uint32_t id;			/* file identifier 			 */
-	char name[16]; 		 	/* 15 + '\0' 				 */
-	uint32_t *inode_ptr;	/* pointer to the inode file */
-	uint32_t time;			/* time of the last edit     */
-	uint32_t size;			/* size of the file 	 	 */
+	uint32_t id;			/* file identifier 		 */
+	char name[16]; 		 	/* 15 + '\0' 			 */
+	char* inode_ptr;    	/* list of chunks        */  // LINKED LIST
+	uint32_t time;			/* time of the last edit */
+	uint32_t size;			/* size of the file 	 */
 } ifile_t;
+
+/* Singleton Superblock */
+ifile_t* superblock_t[_INODE_LIST_LIMIT];
 
 
 /*

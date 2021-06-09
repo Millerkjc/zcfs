@@ -13,12 +13,12 @@
 /*
  * Struct size
  */
-#define _INODE_LIST_LIMIT 1000
+#define _INODE_LIST_LIMIT 1024
 
 // 4/16/32 Kbyte - To be parameterized
-#define _BUFFER_SIZE_4K  4000
-#define _BUFFER_SIZE_16K 16000
-#define _BUFFER_SIZE_32K 32000
+#define _BUFFER_SIZE_4K  0x1000 // 4094
+#define _BUFFER_SIZE_16K 0x4000 // 16384
+#define _BUFFER_SIZE_32K 0x8000 // 32768
 
 /*
  * Memory location and limits
