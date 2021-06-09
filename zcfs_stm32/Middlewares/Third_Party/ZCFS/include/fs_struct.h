@@ -12,7 +12,6 @@
 
 #include "fs_util.h"
 
-
 /*
  * Superblock and file inodes
  */
@@ -42,6 +41,14 @@ typedef struct __attribute__((__packed__)) buffer{
 	bfile_t list[_INODE_LIST_LIMIT];	/* list of all files */
 	uint32_t size;						/* size of the files */
 } main_buffer_t;
+
+
+// main buffer
+void buffer_init();
+void buffer_insert(uint32_t id, char *data);
+// file buffers
+void fbuffer_alloc(uint32_t id);
+void fbuffer_insert(uint32_t id, char *data);
 
 
 /*
