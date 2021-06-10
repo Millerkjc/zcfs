@@ -14,14 +14,13 @@
 
 #define _BUFFER_SIZE _BUFFER_SIZE_16K
 
-
 /*
  * Alloca un buffer di X per il file con file-descriptor "id"
  * Dove la X iniziale è 256 bytes
  * TODO malloc
  */
-void fbuffer_alloc(uint32_t id){
-	bfile_t b;
+void fbuffer_alloc(file_buffer_t fbuf, uint32_t id){
+	// TODO
 }
 
 
@@ -29,10 +28,12 @@ void fbuffer_alloc(uint32_t id){
  * Inserimento di dati nel buffer di uno specifico file
  * TODO eventuale realloc
  */
-void fbuffer_insert(uint32_t id, char *data){
-	if(main_buffer_t.size + size(data) >= _BUFFER_SIZE){
-		// Flush buffer
-		main_buffer_t.size = 0;
+void fbuffer_insert(file_buffer_t fbuf, uint32_t id, char *data){
+	if(fbuf.bfill + sizeof(data) >= fbuf.size){
+		// TODO Flush buffer + write on mem
+		fbuf.bfill = 0;
+		// Free
+		// Malloc
 	}
 }
 
@@ -40,19 +41,23 @@ void fbuffer_insert(uint32_t id, char *data){
 /*
  * Main buffer initialization
  */
-void buffer_init(){
-	main_buffer_t.size = 0;
+void buffer_init(main_buffer_t mbuf){
+	mbuf.size = 0;
 }
 
-void buffer_insert(uint32_t id, char *data){
-	if(main_buffer_t.size + size(data) >= _BUFFER_SIZE){
+void buffer_insert(main_buffer_t mbuf, uint32_t id, char *data){
+	if(mbuf.size + sizeof(data) >= _BUFFER_SIZE){
 		// Flush buffer
-		main_buffer_t.size = 0;
+		// TODO Flush buffer + write on mem
+		mbuf.size = 0;
 	}
 
-	fbuffer_insert(id, data);
-	main_buffer_t.size += size(data);
+	/*
+	 * 	looking for fbuf into the list
+	 */
+	file_buffer_t fbuf = mbuf.list[0]; //TODO
+	fbuffer_insert(fbuf, id, data);
+	mbuf.size += sizeof(data);
 }
-
 
 

@@ -32,28 +32,29 @@ ifile_t* superblock_t[_INODE_LIST_LIMIT];
  * Buffers: main buffer and buffer of the files
  */
 typedef struct __attribute__((__packed__)) buffer_file{
-	uint32_t id;		/* file identifier    */
-	char *file_buffer;	/* buffer of the file */
-} bfile_t;
+	uint32_t id;		/* file identifier    		*/
+	char *file_buffer;	/* buffer of the file 		*/
+	uint32_t bfill;		/* buffer filled 			*/
+	uint32_t size;		/* size of the file buffer  */
+} file_buffer_t;
 
 // TODO change from list to another struct (es. tree, ...)
 typedef struct __attribute__((__packed__)) buffer{
-	bfile_t list[_INODE_LIST_LIMIT];	/* list of all files */
+	file_buffer_t list[_INODE_LIST_LIMIT];	/* list of all files */
 	uint32_t size;						/* size of the files */
 } main_buffer_t;
 
 
 // main buffer
-void buffer_init();
-void buffer_insert(uint32_t id, char *data);
+void buffer_init(main_buffer_t mbuf);
+void buffer_insert(main_buffer_t mbuf, uint32_t id, char *data);
 // file buffers
-void fbuffer_alloc(uint32_t id);
-void fbuffer_insert(uint32_t id, char *data);
+void fbuffer_alloc(file_buffer_t fbuf, uint32_t id);
+void fbuffer_insert(file_buffer_t fbuf, uint32_t id, char *data);
 
 
 /*
  * Memory location
  */
-
-uint32_t superblock_pointer_t = _UP_MEMORY_LIMIT - size(superblock_t);
-
+//uint32_t superblock_pointer_t = ((uint32_t)_UP_MEMORY_LIMIT) - (sizeof(superblock_t)/sizeof(ifile_t*));
+uint32_t superblock_pointer_t = SUPERBLOCK_ADDRESS((sizeof(superblock_t)/sizeof(ifile_t*)));
