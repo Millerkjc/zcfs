@@ -48,6 +48,7 @@ typedef struct list_item {
 
 typedef struct linked_list {
     list_item_t *head;
+    list_item_t *tail;
     int size;
 } linked_list_t;
 

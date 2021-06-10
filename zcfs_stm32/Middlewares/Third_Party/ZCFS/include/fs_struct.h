@@ -40,17 +40,17 @@ typedef struct __attribute__((__packed__)) buffer_file{
 
 // TODO change from list to another struct (es. tree, ...)
 typedef struct __attribute__((__packed__)) buffer{
-	file_buffer_t list[_INODE_LIST_LIMIT];	/* list of all files */
-	uint32_t size;						/* size of the files */
+	file_buffer_t* list[_INODE_LIST_LIMIT];	/* list of all files */
+	uint32_t size;							/* size of the files */
 } main_buffer_t;
 
 
 // main buffer
-void buffer_init(main_buffer_t mbuf);
-void buffer_insert(main_buffer_t mbuf, uint32_t id, char *data);
+void buffer_init(main_buffer_t* mbuf);
+void buffer_insert(main_buffer_t* mbuf, uint32_t id, char *data);
 // file buffers
-void fbuffer_alloc(file_buffer_t fbuf, uint32_t id);
-void fbuffer_insert(file_buffer_t fbuf, uint32_t id, char *data);
+void fbuffer_init(file_buffer_t* fbuf, uint32_t id);
+void fbuffer_insert(file_buffer_t* fbuf, uint32_t id, char *data);
 
 
 /*
