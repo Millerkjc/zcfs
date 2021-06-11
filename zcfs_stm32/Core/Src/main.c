@@ -23,6 +23,8 @@
 /* Private includes ----------------------------------------------------------*/
 /* USER CODE BEGIN Includes */
 #include "test_src.h"
+#include "fs_buffer.h"
+#include "fs_mem.h"
 /* USER CODE END Includes */
 
 /* Private typedef -----------------------------------------------------------*/
@@ -43,7 +45,7 @@
 UART_HandleTypeDef huart2;
 
 /* USER CODE BEGIN PV */
-
+main_buffer_t mbuf;
 /* USER CODE END PV */
 
 /* Private function prototypes -----------------------------------------------*/

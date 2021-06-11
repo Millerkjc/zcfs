@@ -1,14 +1,17 @@
 /*
- * fs_struct.h
+ * fs_buffer.h
  *
- *  Created on: Jun 7, 2021
+ *  Created on: Jun 11, 2021
  *      Author: m3jc
  */
 
-#ifndef THIRD_PARTY_ZCFS_INCLUDE_FS_STRUCT_H_
-#define THIRD_PARTY_ZCFS_INCLUDE_FS_STRUCT_H_
+#ifndef INCLUDE_FS_BUFFER_H_
+#define INCLUDE_FS_BUFFER_H_
 
-#endif /* THIRD_PARTY_ZCFS_INCLUDE_FS_STRUCT_H_ */
+
+
+#endif /* INCLUDE_FS_BUFFER_H_ */
+
 
 #include "fs_util.h"
 
@@ -51,10 +54,3 @@ void buffer_insert(main_buffer_t* mbuf, uint32_t id, char *data);
 // file buffers
 void fbuffer_init(file_buffer_t* fbuf, uint32_t id);
 void fbuffer_insert(file_buffer_t* fbuf, uint32_t id, char *data);
-
-
-/*
- * Memory location
- */
-//uint32_t superblock_pointer_t = ((uint32_t)_UP_MEMORY_LIMIT) - (sizeof(superblock_t)/sizeof(ifile_t*));
-uint32_t superblock_pointer_t = SUPERBLOCK_ADDRESS((sizeof(superblock_t)/sizeof(ifile_t*)));
