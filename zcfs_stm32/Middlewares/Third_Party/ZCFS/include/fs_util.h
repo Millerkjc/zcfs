@@ -5,6 +5,7 @@
  *      Author: m3jc
  */
 
+#include <stdlib.h>
 #include "stm32f4xx_hal.h"
 
 #ifndef THIRD_PARTY_ZCFS_INCLUDE_FS_UTIL_H_

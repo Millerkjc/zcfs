@@ -5,7 +5,6 @@
  *      Author: m3jc
  */
 
-#include <stdlib.h>
 #include "fs_util.h"
 
 

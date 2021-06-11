@@ -30,13 +30,12 @@ typedef struct __attribute__((__packed__)) inode_file{
 /* Singleton Superblock */
 ifile_t* superblock_t[_INODE_LIST_LIMIT];
 
-
 /*
  * Buffers: main buffer and buffer of the files
  */
 typedef struct __attribute__((__packed__)) buffer_file{
 	uint32_t id;		/* file identifier    		*/
-	char *file_buffer;	/* buffer of the file 		*/
+	char* file_buffer;	/* buffer of the file 		*/
 	uint32_t bfill;		/* buffer filled 			*/
 	uint32_t size;		/* size of the file buffer  */
 } file_buffer_t;
@@ -50,7 +49,9 @@ typedef struct __attribute__((__packed__)) buffer{
 
 // main buffer
 void buffer_init(main_buffer_t* mbuf);
+void buffer_flush();
 void buffer_insert(main_buffer_t* mbuf, uint32_t id, char *data);
 // file buffers
 void fbuffer_init(file_buffer_t* fbuf, uint32_t id);
-void fbuffer_insert(file_buffer_t* fbuf, uint32_t id, char *data);
+void fbuffer_insert(file_buffer_t* fbuf, char *data);
+void fbuffer_flush();

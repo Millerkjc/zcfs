@@ -22,6 +22,7 @@
 
 /* Private includes ----------------------------------------------------------*/
 /* USER CODE BEGIN Includes */
+#include <stdio.h>
 #include "test_src.h"
 #include "fs_buffer.h"
 #include "fs_mem.h"
@@ -92,8 +93,58 @@ int main(void)
   MX_USART2_UART_Init();
   /* USER CODE BEGIN 2 */
 
+//  char s[30];
+//  test_src_code(s);
+
+
+  //typedef struct __attribute__((__packed__)) buffer_file{
+  //	uint32_t id;		/* file identifier    		*/
+  //	char *file_buffer;	/* buffer of the file 		*/
+  //	uint32_t bfill;		/* buffer filled 			*/
+  //	uint32_t size;		/* size of the file buffer  */
+  //} file_buffer_t;
+
+
+  /*
+   * FBuff init test
+   */
+  for(int i=0; i<2; i++){
+	  file_buffer_t *fbuf;
+	  fbuf = malloc(sizeof(struct buffer_file));
+	  fbuffer_init(fbuf, i);
+
+	  uint32_t id = fbuf->id;
+	  uint32_t x = fbuf->bfill;
+	  uint32_t y = fbuf->size;
+	  fbuf->file_buffer = "hello\0";
+	  char s[30];
+	  sprintf(s, "%d : %s", i, fbuf->file_buffer);
+  }
+
+
+  /*
+   * FBuff insert test
+   */
+  file_buffer_t *fbuf;
+  fbuf = malloc(sizeof(struct buffer_file));
+  fbuffer_init(fbuf, 1);
+  fbuffer_insert(fbuf, "test");
   char s[30];
-  test_src_code(s);
+  sprintf(s, "%lu : %s", fbuf->id, fbuf->file_buffer);
+  fbuffer_insert(fbuf, "test");
+  fbuffer_insert(fbuf, "test");
+  fbuffer_insert(fbuf, "test");
+  sprintf(s, "%lu : %s", fbuf->id, fbuf->file_buffer);
+
+
+  /*
+   * FBuff flush
+   */
+  fbuffer_flush(fbuf);
+  // TODO free
+  sprintf(s, "%lu : %s", fbuf->id, fbuf->file_buffer);
+
+
   /* USER CODE END 2 */
 
   /* Infinite loop */

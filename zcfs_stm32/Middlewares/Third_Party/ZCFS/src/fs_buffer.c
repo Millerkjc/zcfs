@@ -6,6 +6,7 @@
  */
 
 #include "fs_buffer.h"
+#include <string.h>
 
 /*
  * TODO
@@ -13,27 +14,66 @@
  */
 
 #define _BUFFER_SIZE _BUFFER_SIZE_16K
+#define _FBUFFER_INIT_SIZE 12
 
 /*
  * Alloca un buffer di X per il file con file-descriptor "id"
  * Dove la X iniziale è 256 bytes
  * TODO malloc
  */
+
+
+
+/*
+ * fbuffer initialization
+ * id	: id of the file
+ * bfill: how many byte are in the buffer
+ * size : the current size of the buffer
+ */
 void fbuffer_init(file_buffer_t* fbuf, uint32_t id){
-	// TODO
+	fbuf->id = id;
+	fbuf->bfill = 0;
+	fbuf->size = _FBUFFER_INIT_SIZE;
+	fbuf->file_buffer = malloc(sizeof(char)*_FBUFFER_INIT_SIZE);
+	memset(fbuf->file_buffer, 0, sizeof(char)*_FBUFFER_INIT_SIZE);
 }
 
 
 /*
+ * fbuffer insertion
+ * fbuf: the specific file buffer
+ * data: the data that will be inserted
+ *
  * Inserimento di dati nel buffer di uno specifico file
- * TODO eventuale realloc
  */
-void fbuffer_insert(file_buffer_t* fbuf, uint32_t id, char *data){
+void fbuffer_insert(file_buffer_t* fbuf, char *data){
 	if(fbuf->bfill + sizeof(data) >= fbuf->size){
-		// TODO
-		// Realloc
+		/*
+		 * Resize "size" and realloc memory
+		 */
+		fbuf->size = fbuf->size + sizeof(data) + _FBUFFER_INIT_SIZE;
+		fbuf->file_buffer = (char *)realloc(fbuf->file_buffer, fbuf->size);
+		memset(fbuf->file_buffer+fbuf->bfill, 0, sizeof(data) + _FBUFFER_INIT_SIZE);
 	}
-	// insert data
+	/*
+	 * Insert data and adjust "bfill"
+	 */
+	strcpy(fbuf->file_buffer+fbuf->bfill, data);
+	fbuf->bfill += sizeof(data);
+}
+
+/*
+ * fbuffer flush
+ * fbuf: the specific file buffer
+ *
+ * the data will be write in memory and the buffer cleared
+ */
+void fbuffer_flush(file_buffer_t* fbuf){
+	// TODO write in mem
+
+	free(&fbuf->file_buffer);
+	fbuf->bfill = 0;
+	fbuf->size = 0;
 }
 
 
@@ -42,6 +82,16 @@ void fbuffer_insert(file_buffer_t* fbuf, uint32_t id, char *data){
  */
 void buffer_init(main_buffer_t* mbuf){
 	mbuf->size = 0;
+	memset(mbuf->list, 0, _INODE_LIST_LIMIT*sizeof(file_buffer_t*));
+}
+
+void buffer_flush(main_buffer_t* mbuf){
+	// TODO write in mem
+
+	for(int b=0; b<_INODE_LIST_LIMIT; b++){
+		fbuffer_flush(mbuf->list[b]);
+		free(mbuf->list[b]);
+	}
 }
 
 void buffer_insert(main_buffer_t* mbuf, uint32_t id, char *data){
@@ -54,8 +104,11 @@ void buffer_insert(main_buffer_t* mbuf, uint32_t id, char *data){
 	/*
 	 * 	looking for fbuf into the list
 	 */
-	file_buffer_t* fbuf = mbuf->list[id]; //TODO
-	fbuffer_insert(fbuf, id, data);
+	if (! mbuf->list[id]){
+		//fbuffer_init(mbuf->list[id], id);
+	}
+	file_buffer_t* fbuf = mbuf->list[id];
+	fbuffer_insert(fbuf, data);
 	mbuf->size += sizeof(data);
 }
 
