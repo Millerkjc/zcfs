@@ -43,6 +43,7 @@ typedef struct __attribute__((__packed__)) buffer_file{
 // TODO change from list to another struct (es. tree, ...)
 typedef struct __attribute__((__packed__)) buffer{
 	file_buffer_t* list[_INODE_LIST_LIMIT];	/* list of all files */
+	uint32_t files;							/* number of files	 */
 	uint32_t size;							/* size of the files */
 } main_buffer_t;
 

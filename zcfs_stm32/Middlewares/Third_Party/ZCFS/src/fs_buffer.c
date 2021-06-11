@@ -17,14 +17,6 @@
 #define _FBUFFER_INIT_SIZE 12
 
 /*
- * Alloca un buffer di X per il file con file-descriptor "id"
- * Dove la X iniziale è 256 bytes
- * TODO malloc
- */
-
-
-
-/*
  * fbuffer initialization
  * id	: id of the file
  * bfill: how many byte are in the buffer
@@ -78,37 +70,55 @@ void fbuffer_flush(file_buffer_t* fbuf){
 
 
 /*
- * Main buffer initialization
+ * mbuffer initialization
+ * mbuf: the main buffer
  */
 void buffer_init(main_buffer_t* mbuf){
 	mbuf->size = 0;
+	mbuf->files = 0;
 	memset(mbuf->list, 0, _INODE_LIST_LIMIT*sizeof(file_buffer_t*));
 }
 
+/*
+ * mbuffer initialization
+ * mbuf: the main buffer
+ */
 void buffer_flush(main_buffer_t* mbuf){
 	// TODO write in mem
 
-	for(int b=0; b<_INODE_LIST_LIMIT; b++){
+	for(int b=0; b < mbuf->files; b++){
 		fbuffer_flush(mbuf->list[b]);
 		free(mbuf->list[b]);
 	}
 }
 
+/*
+ * mbuffer initialization
+ * mbuf : the main buffer
+ * id	: id of the file
+ * data	: the data that will be inserted
+ */
 void buffer_insert(main_buffer_t* mbuf, uint32_t id, char *data){
 	if(mbuf->size + sizeof(data) >= _BUFFER_SIZE){
 		// Flush buffer
 		// TODO Flush buffer + write on mem
-		mbuf->size = 0;
+		buffer_flush(mbuf);
+		buffer_init(mbuf);
 	}
 
 	/*
 	 * 	looking for fbuf into the list
 	 */
-	if (! mbuf->list[id]){
-		//fbuffer_init(mbuf->list[id], id);
+	if (! mbuf->list[id]){ // or if mbuf->files <= id
+		mbuf->files += 1;
+		mbuf->list[id] = malloc(sizeof(struct buffer_file));
+		fbuffer_init(mbuf->list[id], id);
 	}
-	file_buffer_t* fbuf = mbuf->list[id];
-	fbuffer_insert(fbuf, data);
+
+	/*
+	 * Insert the data in the buffer of the specific file
+	 */
+	fbuffer_insert(mbuf->list[id], data);
 	mbuf->size += sizeof(data);
 }
 

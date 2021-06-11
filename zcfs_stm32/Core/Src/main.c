@@ -46,7 +46,7 @@
 UART_HandleTypeDef huart2;
 
 /* USER CODE BEGIN PV */
-main_buffer_t mbuf;
+
 /* USER CODE END PV */
 
 /* Private function prototypes -----------------------------------------------*/
@@ -106,6 +106,12 @@ int main(void)
 
 
   /*
+   * ===============
+   * ==== FBUFF ====
+   * ===============
+   */
+
+  /*
    * FBuff init test
    */
   for(int i=0; i<2; i++){
@@ -143,6 +149,29 @@ int main(void)
   fbuffer_flush(fbuf);
   // TODO free
   sprintf(s, "%lu : %s", fbuf->id, fbuf->file_buffer);
+
+
+  /*
+   * ===============
+   * ==== MBUFF ====
+   * ===============
+   */
+
+  /*
+   * MBuff init test
+   */
+  main_buffer_t *mbuf = malloc(sizeof(main_buffer_t));
+  buffer_init(mbuf);
+
+  /*
+   * MBuff insert test
+   */
+  buffer_insert(mbuf, 0, "test1");
+  buffer_insert(mbuf, 0, "test2");
+  buffer_insert(mbuf, 1, "test3");
+
+
+
 
 
   /* USER CODE END 2 */
