@@ -64,6 +64,7 @@ void fbuffer_flush(file_buffer_t* fbuf){
 	// TODO write in mem
 
 	free(&fbuf->file_buffer);
+	fbuf->file_buffer = NULL;
 	fbuf->bfill = 0;
 	fbuf->size = 0;
 }

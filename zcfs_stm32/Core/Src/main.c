@@ -23,9 +23,21 @@
 /* Private includes ----------------------------------------------------------*/
 /* USER CODE BEGIN Includes */
 #include <stdio.h>
+#ifndef THIRD_PARTY_ZCFS_SRC_TEST_SRC_H_
+#define THIRD_PARTY_ZCFS_SRC_TEST_SRC_H_
 #include "test_src.h"
+#endif
+#ifndef INCLUDE_FS_BUFFER_H_
+#define INCLUDE_FS_BUFFER_H_
 #include "fs_buffer.h"
+#endif
+#ifndef INCLUDE_FS_MEM_H_
+#define INCLUDE_FS_MEM_H_
 #include "fs_mem.h"
+#endif
+
+
+
 /* USER CODE END Includes */
 
 /* Private typedef -----------------------------------------------------------*/
@@ -105,73 +117,11 @@ int main(void)
   //} file_buffer_t;
 
 
-  /*
-   * ===============
-   * ==== FBUFF ====
-   * ===============
-   */
+  test_fbuf_init();
 
-  /*
-   * FBuff init test
-   */
-  for(int i=0; i<2; i++){
-	  file_buffer_t *fbuf;
-	  fbuf = malloc(sizeof(struct buffer_file));
-	  fbuffer_init(fbuf, i);
+  test_fbuf_insert_flush();
 
-	  uint32_t id = fbuf->id;
-	  uint32_t x = fbuf->bfill;
-	  uint32_t y = fbuf->size;
-	  fbuf->file_buffer = "hello\0";
-	  char s[30];
-	  sprintf(s, "%d : %s", i, fbuf->file_buffer);
-  }
-
-
-  /*
-   * FBuff insert test
-   */
-  file_buffer_t *fbuf;
-  fbuf = malloc(sizeof(struct buffer_file));
-  fbuffer_init(fbuf, 1);
-  fbuffer_insert(fbuf, "test");
-  char s[30];
-  sprintf(s, "%lu : %s", fbuf->id, fbuf->file_buffer);
-  fbuffer_insert(fbuf, "test");
-  fbuffer_insert(fbuf, "test");
-  fbuffer_insert(fbuf, "test");
-  sprintf(s, "%lu : %s", fbuf->id, fbuf->file_buffer);
-
-
-  /*
-   * FBuff flush
-   */
-  fbuffer_flush(fbuf);
-  // TODO free
-  sprintf(s, "%lu : %s", fbuf->id, fbuf->file_buffer);
-
-
-  /*
-   * ===============
-   * ==== MBUFF ====
-   * ===============
-   */
-
-  /*
-   * MBuff init test
-   */
-  main_buffer_t *mbuf = malloc(sizeof(main_buffer_t));
-  buffer_init(mbuf);
-
-  /*
-   * MBuff insert test
-   */
-  buffer_insert(mbuf, 0, "test1");
-  buffer_insert(mbuf, 0, "test2");
-  buffer_insert(mbuf, 1, "test3");
-
-
-
+  test_mbuf_init_insert();
 
 
   /* USER CODE END 2 */
