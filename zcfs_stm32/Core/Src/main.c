@@ -23,14 +23,18 @@
 /* Private includes ----------------------------------------------------------*/
 /* USER CODE BEGIN Includes */
 #include <stdio.h>
+#include "fs_syscalls.h"
+
 #ifndef THIRD_PARTY_ZCFS_SRC_TEST_SRC_H_
 #define THIRD_PARTY_ZCFS_SRC_TEST_SRC_H_
 #include "test_src.h"
 #endif
+
 #ifndef INCLUDE_FS_BUFFER_H_
 #define INCLUDE_FS_BUFFER_H_
 #include "fs_buffer.h"
 #endif
+
 #ifndef INCLUDE_FS_MEM_H_
 #define INCLUDE_FS_MEM_H_
 #include "fs_mem.h"
@@ -107,6 +111,9 @@ int main(void)
 
 //  char s[30];
 //  test_src_code(s);
+
+  _write(34, "test_write", 11);
+
 
 
   //typedef struct __attribute__((__packed__)) buffer_file{

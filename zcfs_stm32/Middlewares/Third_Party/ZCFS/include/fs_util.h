@@ -21,9 +21,25 @@
   * External Device [0xA0000000 - 0xDFFFFFFF]
   * External RAM	   [0x9FFFFFFF - 0x60000000]
   */
-#define _UP_MEMORY_LIMIT   ((uint32_t)0x9FFFFFFF)
-#define _DOWN_MEMORY_LIMIT ((uint32_t)0x60000000)
-#define SUPERBLOCK_ADDRESS(superblock_size) (_UP_MEMORY_LIMIT - superblock_size)
+//#define _UP_MEMORY_LIMIT   ((uint32_t)0x9FFFFFFF)
+//#define _DOWN_MEMORY_LIMIT ((uint32_t)0x60000000)
+
+ /*
+  * Memory location and limits
+  *
+  * Flash [0x08000000 - 0x08100000]
+  */
+//#define _UP_MEMORY_LIMIT   ((uint32_t)0x08100000)
+//#define _DOWN_MEMORY_LIMIT ((uint32_t)0x08000000)
+
+//#define _UP_MEMORY_LIMIT   ((uint32_t)0x08100000)
+//#define _DOWN_MEMORY_LIMIT ((uint32_t)0x080E0000)
+
+#define _UP_MEMORY_LIMIT   ((uint32_t)0x080c0000)
+#define _DOWN_MEMORY_LIMIT ((uint32_t)0x08040000)
+
+
+ #define SUPERBLOCK_ADDRESS(superblock_size) (_UP_MEMORY_LIMIT - superblock_size)
 
  /*
   * Struct size

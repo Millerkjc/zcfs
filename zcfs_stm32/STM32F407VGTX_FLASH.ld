@@ -40,11 +40,19 @@ MEMORY
   CCMRAM    (xrw)    : ORIGIN = 0x10000000,   LENGTH = 64K
   RAM    (xrw)    : ORIGIN = 0x20000000,   LENGTH = 128K
   FLASH    (rx)    : ORIGIN = 0x8000000,   LENGTH = 1024K
+  DATA (rwx)      : ORIGIN = 0x08040000, LENGTH = 512k
 }
 
 /* Sections */
 SECTIONS
 {
+  .user_data :
+  {
+    . = ALIGN(4);
+     KEEP(*(.user_data))
+    . = ALIGN(4);
+  } > DATA
+
   /* The startup code into "FLASH" Rom type memory */
   .isr_vector :
   {
