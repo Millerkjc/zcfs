@@ -49,10 +49,12 @@ typedef struct __attribute__((__packed__)) buffer{
 
 
 // main buffer
-void buffer_init(main_buffer_t* mbuf);
+void buffer_reset(main_buffer_t* mbuf);
+main_buffer_t* buffer_init(main_buffer_t* mbuf);
 void buffer_flush();
-void buffer_insert(main_buffer_t* mbuf, uint32_t id, char *data);
+HAL_StatusTypeDef buffer_insert(main_buffer_t* mbuf, uint32_t id, char *data, uint32_t len);
 // file buffers
-void fbuffer_init(file_buffer_t* fbuf, uint32_t id);
-void fbuffer_insert(file_buffer_t* fbuf, char *data);
+void fbuffer_reset(file_buffer_t* fbuf);
+file_buffer_t* fbuffer_init(file_buffer_t* fbuf, uint32_t id);
+HAL_StatusTypeDef fbuffer_insert(file_buffer_t* fbuf, char *data, uint32_t len);
 void fbuffer_flush();
