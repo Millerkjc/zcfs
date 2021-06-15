@@ -60,6 +60,7 @@
 
 /* Private variables ---------------------------------------------------------*/
 UART_HandleTypeDef huart2;
+main_buffer_t *mbuf;
 
 /* USER CODE BEGIN PV */
 
@@ -94,6 +95,7 @@ int main(void)
   HAL_Init();
 
   /* USER CODE BEGIN Init */
+  mbuf = buffer_init(mbuf);
 
   /* USER CODE END Init */
 
@@ -108,6 +110,8 @@ int main(void)
   MX_GPIO_Init();
   MX_USART2_UART_Init();
   /* USER CODE BEGIN 2 */
+
+  RetargetInit(&huart2, mbuf);
 
 //  char s[30];
 //  test_src_code(s);
@@ -124,11 +128,9 @@ int main(void)
   //} file_buffer_t;
 
 
-  test_fbuf_init();
-
-  test_fbuf_insert_flush();
-
-  test_mbuf_init_insert();
+//  test_fbuf_init();
+//  test_fbuf_insert_flush();
+//  test_mbuf_init_insert(mbuf);
 
 
   /* USER CODE END 2 */

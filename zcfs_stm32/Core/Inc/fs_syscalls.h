@@ -11,6 +11,12 @@
 #include "stm32f4xx_hal.h"
 #include <sys/stat.h>
 
+#ifndef INCLUDE_FS_BUFFER_H_
+#define INCLUDE_FS_BUFFER_H_
+#include "fs_buffer.h"
+#endif
+
+void RetargetInit(UART_HandleTypeDef *huart, main_buffer_t* buf);
 int _isatty(int fd);
 int _write(int fd, char* ptr, int len);
 int _close(int fd);
