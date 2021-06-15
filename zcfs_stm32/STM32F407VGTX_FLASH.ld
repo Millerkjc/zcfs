@@ -35,22 +35,31 @@ _Min_Heap_Size = 0x200 ;	/* required amount of heap  */
 _Min_Stack_Size = 0x400 ;	/* required amount of stack */
 
 /* Memories definition */
+/*
+	Added DATA (rwx) for the ZCFS
+ */
 MEMORY
 {
   CCMRAM    (xrw)    : ORIGIN = 0x10000000,   LENGTH = 64K
   RAM    (xrw)    : ORIGIN = 0x20000000,   LENGTH = 128K
   FLASH    (rx)    : ORIGIN = 0x8000000,   LENGTH = 1024K
-  DATA (rwx)      : ORIGIN = 0x08040000, LENGTH = 512k
+  DATA    (rwx)    : ORIGIN = 0x08040000,   LENGTH = 512k
 }
 
 /* Sections */
 SECTIONS
 {
+  /* Added .user_data > DATA for the ZCFS */
   .user_data :
   {
     . = ALIGN(4);
+    _suser_data = .;
+    __user_data_start__ = _suser_data;
      KEEP(*(.user_data))
+     KEEP(*(.user_data*))
     . = ALIGN(4);
+    _euser_data = .;
+    __user_data_end__ = _euser_data;
   } > DATA
 
   /* The startup code into "FLASH" Rom type memory */
