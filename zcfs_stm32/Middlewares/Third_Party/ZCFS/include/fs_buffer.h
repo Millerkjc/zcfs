@@ -5,15 +5,11 @@
  *      Author: m3jc
  */
 
+#include "fs_util.h"
+
+
 #ifndef INCLUDE_FS_BUFFER_H_
 #define INCLUDE_FS_BUFFER_H_
-
-
-
-#endif /* INCLUDE_FS_BUFFER_H_ */
-
-
-#include "fs_util.h"
 
 /*
  * Superblock and file inodes
@@ -58,3 +54,6 @@ void fbuffer_reset(file_buffer_t* fbuf);
 file_buffer_t* fbuffer_init(file_buffer_t* fbuf, uint32_t id);
 HAL_StatusTypeDef fbuffer_insert(file_buffer_t* fbuf, char *data, uint32_t len);
 void fbuffer_flush();
+
+
+#endif /* INCLUDE_FS_BUFFER_H_ */

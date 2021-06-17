@@ -13,10 +13,11 @@
 #include <sys/times.h>
 #include <limits.h>
 #include <signal.h>
-#include <../Inc/fs_syscalls.h>
 #include <stdint.h>
 #include <stdio.h>
 
+#include <../Inc/fs_syscalls.h>
+#include <../../Middlewares/Third_Party/ZCFS/include/fs_util.h>
 
 #define STDIN_FILENO  0
 #define STDOUT_FILENO 1
@@ -123,8 +124,6 @@ int _write(int fd, char* ptr, int len) {
 
 	  // TODO ADD
 	  hstatus = buffer_insert(mbuf, fd, ptr, len);
-
-	  hstatus = HAL_OK;
 
 	  if (hstatus == HAL_OK)
 		  return len;

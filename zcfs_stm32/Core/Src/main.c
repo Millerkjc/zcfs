@@ -25,22 +25,6 @@
 #include <stdio.h>
 #include "fs_syscalls.h"
 
-#ifndef THIRD_PARTY_ZCFS_SRC_TEST_SRC_H_
-#define THIRD_PARTY_ZCFS_SRC_TEST_SRC_H_
-#include "test_src.h"
-#endif
-
-#ifndef INCLUDE_FS_BUFFER_H_
-#define INCLUDE_FS_BUFFER_H_
-#include "fs_buffer.h"
-#endif
-
-#ifndef INCLUDE_FS_MEM_H_
-#define INCLUDE_FS_MEM_H_
-#include "fs_mem.h"
-#endif
-
-
 
 /* USER CODE END Includes */
 
@@ -113,9 +97,6 @@ int main(void)
 
   RetargetInit(&huart2, mbuf);
 
-//  char s[30];
-//  test_src_code(s);
-
   _write(34, "test_write", 11);
 
 
@@ -128,9 +109,9 @@ int main(void)
   //} file_buffer_t;
 
 
-//  test_fbuf_init();
-//  test_fbuf_insert_flush();
-//  test_mbuf_init_insert(mbuf);
+  test_fbuf_init();
+  test_fbuf_insert_flush();
+  test_mbuf_init_insert(mbuf);
 
 
   /* USER CODE END 2 */

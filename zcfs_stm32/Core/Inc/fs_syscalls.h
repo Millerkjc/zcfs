@@ -5,16 +5,13 @@
  *      Author: m3jc
  */
 
+
+#include <sys/stat.h>
+#include "stm32f4xx_hal.h"
+#include "fs_buffer.h"
+
 #ifndef INC_FS_SYSCALLS_H_
 #define INC_FS_SYSCALLS_H_
-
-#include "stm32f4xx_hal.h"
-#include <sys/stat.h>
-
-#ifndef INCLUDE_FS_BUFFER_H_
-#define INCLUDE_FS_BUFFER_H_
-#include "fs_buffer.h"
-#endif
 
 void RetargetInit(UART_HandleTypeDef *huart, main_buffer_t* buf);
 int _isatty(int fd);

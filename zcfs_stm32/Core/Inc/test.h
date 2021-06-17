@@ -3,19 +3,11 @@
 #include "assert.h"
 #include <string.h>
 
-#ifndef INCLUDE_FS_BUFFER_H_
-#define INCLUDE_FS_BUFFER_H_
 #include "fs_buffer.h"
-#endif
 
 #ifndef INCLUDE_FS_MEM_H_
 #define INCLUDE_FS_MEM_H_
 #include "fs_mem.h"
-#endif
-
-#ifndef THIRD_PARTY_ZCFS_SRC_TEST_SRC_H_
-#define THIRD_PARTY_ZCFS_SRC_TEST_SRC_H_
-#include "test_src.h"
 #endif
 
 #ifndef TEST_H_
