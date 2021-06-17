@@ -24,7 +24,7 @@
 /* USER CODE BEGIN Includes */
 #include <stdio.h>
 #include "fs_syscalls.h"
-#include "fs_core.h"
+//#include "fs_core.h"
 
 /* USER CODE END Includes */
 

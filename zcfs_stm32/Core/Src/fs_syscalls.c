@@ -15,22 +15,18 @@
 #include <signal.h>
 #include <stdint.h>
 #include <stdio.h>
+#include "fs_syscalls.h"
 
-#include <../Inc/fs_syscalls.h>
-#include <../../Middlewares/Third_Party/ZCFS/include/fs_core.h>
+//void* __attribute((__section__(".user_data"))) user_data;
+//extern int __user_data_start__, __user_data_end__;
+//#define _VZCFS_DISK_START (uint32_t)&__user_data_start__
+//#define _VZCFS_DISK_SIZE 524288
+//uint32_t write_ptr = _VZCFS_DISK_START;
+
 
 #define STDIN_FILENO  0
 #define STDOUT_FILENO 1
 #define STDERR_FILENO 2
-
-void* __attribute((__section__(".user_data"))) user_data;
-extern int __user_data_start__, __user_data_end__;
-
-#define _VZCFS_DISK_START (uint32_t)&__user_data_start__
-#define _VZCFS_DISK_SIZE 524288
-
-uint32_t write_ptr = _VZCFS_DISK_START;
-
 
 
 //__attribute__((weak)) int _read(int file, char *ptr, int len)
@@ -47,40 +43,6 @@ uint32_t write_ptr = _VZCFS_DISK_START;
 
 
 
-HAL_StatusTypeDef flash_write(uint32_t address, char* data, uint32_t data_len){
-    HAL_FLASH_Unlock();
-
-//    FLASH_Erase_Sector(FLASH_SECTOR_4,VOLTAGE_RANGE_1);
-
-//    uint32_t x = (uint32_t)&__user_data_start__;
-//    uint32_t y = (uint32_t)_VZCFS_DISK_START + (uint32_t)_VZCFS_DISK_SIZE;
-
-
-
-    // TODO WRITE WITH DMA?
-
-
-
-
-
-//    FLASH_Erase_Sector(FLASH_SECTOR_6, FLASH_VOLTAGE_RANGE_1);
-//    FLASH_Erase_Sector(FLASH_SECTOR_7,VOLTAGE_RANGE_1);
-//    FLASH_Erase_Sector(FLASH_SECTOR_8,VOLTAGE_RANGE_1);
-//    FLASH_Erase_Sector(FLASH_SECTOR_9,VOLTAGE_RANGE_1);
-
-//	for(int DataIdx = 0; DataIdx < data_len; DataIdx++)
-//	{
-////		__io_putchar(*ptr++);
-////		HAL_FLASH_Program(FLASH_TYPEPROGRAM_WORD, address, *data++);
-//
-//		// CORRECT
-//		//		HAL_FLASH_Program(FLASH_TYPEPROGRAM_BYTE, address++, *data++);
-//		HAL_FLASH_Program(FLASH_TYPEPROGRAM_BYTE, address++, *data);
-//	}
-    HAL_FLASH_Lock();
-
-    return HAL_OK;
-}
 
 //void inode_write(char* data, uint32_t data_len);
 //void data_write(char* data, uint32_t data_len);

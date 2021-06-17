@@ -8,7 +8,7 @@
 
 #include <sys/stat.h>
 #include "stm32f4xx_hal.h"
-#include "fs_buffer.h"
+#include "fs_core.h"
 
 #ifndef INC_FS_SYSCALLS_H_
 #define INC_FS_SYSCALLS_H_
