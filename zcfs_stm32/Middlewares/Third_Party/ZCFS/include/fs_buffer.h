@@ -7,7 +7,6 @@
 
 #include "fs_util.h"
 
-
 #ifndef INCLUDE_FS_BUFFER_H_
 #define INCLUDE_FS_BUFFER_H_
 

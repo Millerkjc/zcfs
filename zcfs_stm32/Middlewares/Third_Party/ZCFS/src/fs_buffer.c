@@ -85,9 +85,6 @@ void fbuffer_flush(file_buffer_t* fbuf){
 
 
 
-
-
-
 /*
  * buffer reset
  * mbuf: the main buffer

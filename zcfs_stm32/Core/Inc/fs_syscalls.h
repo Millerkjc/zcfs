@@ -13,7 +13,6 @@
 #ifndef INC_FS_SYSCALLS_H_
 #define INC_FS_SYSCALLS_H_
 
-void RetargetInit(UART_HandleTypeDef *huart, main_buffer_t* buf);
 int _isatty(int fd);
 int _write(int fd, char* ptr, int len);
 int _close(int fd);

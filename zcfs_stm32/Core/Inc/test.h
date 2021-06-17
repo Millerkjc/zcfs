@@ -3,7 +3,7 @@
 #include "assert.h"
 #include <string.h>
 
-#include "fs_buffer.h"
+#include "fs_core.h"
 
 #ifndef INCLUDE_FS_MEM_H_
 #define INCLUDE_FS_MEM_H_

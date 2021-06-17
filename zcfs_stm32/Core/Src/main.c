@@ -24,7 +24,7 @@
 /* USER CODE BEGIN Includes */
 #include <stdio.h>
 #include "fs_syscalls.h"
-
+#include "fs_core.h"
 
 /* USER CODE END Includes */
 
@@ -44,7 +44,7 @@
 
 /* Private variables ---------------------------------------------------------*/
 UART_HandleTypeDef huart2;
-main_buffer_t *mbuf;
+//main_buffer_t *mbuf;
 
 /* USER CODE BEGIN PV */
 
@@ -79,7 +79,7 @@ int main(void)
   HAL_Init();
 
   /* USER CODE BEGIN Init */
-  mbuf = buffer_init(mbuf);
+//  mbuf = buffer_init(mbuf);
 
   /* USER CODE END Init */
 
@@ -95,23 +95,16 @@ int main(void)
   MX_USART2_UART_Init();
   /* USER CODE BEGIN 2 */
 
-  RetargetInit(&huart2, mbuf);
+  fs_init(&huart2);
 
-  _write(34, "test_write", 11);
+  write(34, "test_write", 11);
 
-
-
-  //typedef struct __attribute__((__packed__)) buffer_file{
-  //	uint32_t id;		/* file identifier    		*/
-  //	char *file_buffer;	/* buffer of the file 		*/
-  //	uint32_t bfill;		/* buffer filled 			*/
-  //	uint32_t size;		/* size of the file buffer  */
-  //} file_buffer_t;
-
-
-  test_fbuf_init();
-  test_fbuf_insert_flush();
-  test_mbuf_init_insert(mbuf);
+  /*
+   * TESTS
+   */
+//  test_fbuf_init();
+//  test_fbuf_insert_flush();
+//  test_mbuf_init_insert();
 
 
   /* USER CODE END 2 */

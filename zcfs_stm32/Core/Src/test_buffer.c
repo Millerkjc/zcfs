@@ -58,7 +58,7 @@ void test_fbuf_insert_flush(){
 	  //assert(strcmp(s, "1 : "));
 }
 
-void test_mbuf_init_insert(main_buffer_t *mbuf){
+void test_mbuf_init_insert(){
 
 	  /*
 	   * MBuff init test
