@@ -13,9 +13,23 @@ extern int __user_data_start__, __user_data_end__;
 #define _VZCFS_DISK_SIZE 524288
 uint32_t write_ptr = _VZCFS_DISK_START;
 
+//// DMA CALLBACK
+//void DMATransferComplete(DMA_HandleTypeDef *hdma){
+//  if(hdma->Instance == DMA1_Stream6){
+//	  // Disable UART DMA mode
+//	  gHuart->Instance->CR3 &= ~USART_CR3_DMAT;
+//	  // Turn Red Led On
+//	  HAL_GPIO_TogglePin(GPIOD, GPIO_PIN_15);
+//	  HAL_Delay(500);
+//  }
+//}
 
-void RetargetInit(UART_HandleTypeDef *huart) {
+void RetargetInit(UART_HandleTypeDef *huart, DMA_HandleTypeDef *hdma_usart_tx, DMA_HandleTypeDef *hdma_usart_rx, DMA_HandleTypeDef *hdma_memtomem){
   gHuart = huart;
+  ghdma_usart2_tx = hdma_usart_tx;
+  ghdma_usart2_rx = hdma_usart_rx;
+  ghdma_memtomem_dma2_stream0 = hdma_memtomem;
+
 
   /* Disable I/O buffering for STDOUT stream, so that
    * chars are sent out as soon as they are printed. */
@@ -61,9 +75,22 @@ HAL_StatusTypeDef flash_write(uint32_t address, char* data, uint32_t data_len){
 
 
 
-void fs_init(UART_HandleTypeDef *huart){
-	RetargetInit(huart);
+//void fs_init(UART_HandleTypeDef *huart){
+void fs_init(UART_HandleTypeDef *huart, DMA_HandleTypeDef *hdma_usart_tx, DMA_HandleTypeDef *hdma_usart_rx, DMA_HandleTypeDef *hdma_memtomem){
+
+	RetargetInit(huart, hdma_usart_tx, hdma_usart_rx, hdma_memtomem);
 	mbuf = buffer_init(mbuf);
+
+
+//	char msg[30] = "hello";
+//
+//	// DMA initialization (Interrupt mode)
+//	HAL_DMA_Start_IT(ghdma_usart2_tx, (uint32_t)msg, (uint32_t)gHuart->Instance->DR, strlen(msg));
+//	// Enable UART in DMA mode
+//	gHuart->Instance->CR3 |= USART_CR3_DMAT;
+
+
+
 
 //	TODO Uncomment when released
 //	uint32_t address = (uint32_t)_VZCFS_DISK_START;

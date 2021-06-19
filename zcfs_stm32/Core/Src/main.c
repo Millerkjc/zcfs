@@ -23,6 +23,7 @@
 /* Private includes ----------------------------------------------------------*/
 /* USER CODE BEGIN Includes */
 #include <stdio.h>
+#include <string.h>
 #include "fs_syscalls.h"
 //#include "fs_core.h"
 
@@ -44,18 +45,21 @@
 
 /* Private variables ---------------------------------------------------------*/
 UART_HandleTypeDef huart2;
-//main_buffer_t *mbuf;
+DMA_HandleTypeDef hdma_usart2_tx;
+DMA_HandleTypeDef hdma_usart2_rx;
 
+DMA_HandleTypeDef hdma_memtomem_dma2_stream0;
 /* USER CODE BEGIN PV */
-
+char *msg = "Hello STM32 Lovers! This message is transferred in DMA(IT) Mode.\r\n";
 /* USER CODE END PV */
 
 /* Private function prototypes -----------------------------------------------*/
 void SystemClock_Config(void);
 static void MX_GPIO_Init(void);
+static void MX_DMA_Init(void);
 static void MX_USART2_UART_Init(void);
 /* USER CODE BEGIN PFP */
-
+void DMATransferComplete(DMA_HandleTypeDef *hdma);
 /* USER CODE END PFP */
 
 /* Private user code ---------------------------------------------------------*/
@@ -92,12 +96,23 @@ int main(void)
 
   /* Initialize all configured peripherals */
   MX_GPIO_Init();
+  MX_DMA_Init();
   MX_USART2_UART_Init();
   /* USER CODE BEGIN 2 */
 
-  fs_init(&huart2);
 
-  write(34, "test_write", 11);
+//  fs_init(&huart2, &hdma_usart2_tx, &hdma_usart2_rx, &hdma_memtomem_dma2_stream0);
+
+//  write(34, "test_write", 11);
+
+
+//	char msg[30] = "hello";
+
+	// DMA initialization (Interrupt mode)
+	HAL_DMA_Start_IT(&hdma_usart2_tx, (uint32_t)msg, (uint32_t)&huart2.Instance->DR, strlen(msg));
+	// Enable UART in DMA mode
+	huart2.Instance->CR3 |= USART_CR3_DMAT;
+
 
   /*
    * TESTS
@@ -198,20 +213,81 @@ static void MX_USART2_UART_Init(void)
 }
 
 /**
+  * Enable DMA controller clock
+  * Configure DMA for memory to memory transfers
+  *   hdma_memtomem_dma2_stream0
+  */
+static void MX_DMA_Init(void)
+{
+
+  /* DMA controller clock enable */
+  __HAL_RCC_DMA1_CLK_ENABLE();
+  __HAL_RCC_DMA2_CLK_ENABLE();
+
+  /* Configure DMA request hdma_memtomem_dma2_stream0 on DMA2_Stream0 */
+  hdma_memtomem_dma2_stream0.Instance = DMA2_Stream0;
+  hdma_memtomem_dma2_stream0.Init.Channel = DMA_CHANNEL_0;
+  hdma_memtomem_dma2_stream0.Init.Direction = DMA_MEMORY_TO_MEMORY;
+  hdma_memtomem_dma2_stream0.Init.PeriphInc = DMA_PINC_ENABLE;
+  hdma_memtomem_dma2_stream0.Init.MemInc = DMA_MINC_ENABLE;
+  hdma_memtomem_dma2_stream0.Init.PeriphDataAlignment = DMA_PDATAALIGN_WORD;
+  hdma_memtomem_dma2_stream0.Init.MemDataAlignment = DMA_MDATAALIGN_WORD;
+  hdma_memtomem_dma2_stream0.Init.Mode = DMA_NORMAL;
+  hdma_memtomem_dma2_stream0.Init.Priority = DMA_PRIORITY_MEDIUM;
+  hdma_memtomem_dma2_stream0.Init.FIFOMode = DMA_FIFOMODE_ENABLE;
+  hdma_memtomem_dma2_stream0.Init.FIFOThreshold = DMA_FIFO_THRESHOLD_FULL;
+  hdma_memtomem_dma2_stream0.Init.MemBurst = DMA_MBURST_SINGLE;
+  hdma_memtomem_dma2_stream0.Init.PeriphBurst = DMA_PBURST_SINGLE;
+  if (HAL_DMA_Init(&hdma_memtomem_dma2_stream0) != HAL_OK)
+  {
+    Error_Handler( );
+  }
+
+  /* DMA interrupt init */
+  /* DMA1_Stream5_IRQn interrupt configuration */
+  HAL_NVIC_SetPriority(DMA1_Stream5_IRQn, 0, 0);
+  HAL_NVIC_EnableIRQ(DMA1_Stream5_IRQn);
+  /* DMA1_Stream6_IRQn interrupt configuration */
+  HAL_NVIC_SetPriority(DMA1_Stream6_IRQn, 0, 0);
+  HAL_NVIC_EnableIRQ(DMA1_Stream6_IRQn);
+
+}
+
+/**
   * @brief GPIO Initialization Function
   * @param None
   * @retval None
   */
 static void MX_GPIO_Init(void)
 {
+  GPIO_InitTypeDef GPIO_InitStruct = {0};
 
   /* GPIO Ports Clock Enable */
   __HAL_RCC_GPIOA_CLK_ENABLE();
+  __HAL_RCC_GPIOD_CLK_ENABLE();
+
+  /*Configure GPIO pin Output Level */
+  HAL_GPIO_WritePin(GPIOD, GPIO_PIN_14, GPIO_PIN_RESET);
+
+  /*Configure GPIO pin : PD14 */
+  GPIO_InitStruct.Pin = GPIO_PIN_14;
+  GPIO_InitStruct.Mode = GPIO_MODE_OUTPUT_PP;
+  GPIO_InitStruct.Pull = GPIO_NOPULL;
+  GPIO_InitStruct.Speed = GPIO_SPEED_FREQ_LOW;
+  HAL_GPIO_Init(GPIOD, &GPIO_InitStruct);
 
 }
 
 /* USER CODE BEGIN 4 */
-
+// DMA CALLBACK
+void DMATransferComplete(DMA_HandleTypeDef *hdma){
+  if(hdma->Instance == DMA1_Stream6){
+	  // Disable UART DMA mode
+	  huart2.Instance->CR3 &= ~USART_CR3_DMAT;
+	  // Turn Red Led On
+	  HAL_GPIO_WritePin(GPIOD, GPIO_PIN_14, GPIO_PIN_SET);
+  }
+}
 /* USER CODE END 4 */
 
 /**

@@ -8,6 +8,7 @@
 
 #include <stdio.h>
 #include <errno.h>
+#include <string.h>
 #include "fs_buffer.h"
 
 //void* __attribute((__section__(".user_data"))) user_data;
@@ -23,12 +24,15 @@
 #define write _write
 
 // Functions
-void fs_init(UART_HandleTypeDef *huart);
+void fs_init(UART_HandleTypeDef *huart, DMA_HandleTypeDef *hdma_usart_tx, DMA_HandleTypeDef *hdma_usart_rx, DMA_HandleTypeDef *hdma_memtomem);
 HAL_StatusTypeDef fs_write(int fd, char* ptr, int len);
 //HAL_StatusTypeDef fs_read(int fd, char* ptr, int len);
 
 // Variables
 UART_HandleTypeDef *gHuart;
 main_buffer_t* mbuf;
+DMA_HandleTypeDef *ghdma_usart2_tx;
+DMA_HandleTypeDef *ghdma_usart2_rx;
+DMA_HandleTypeDef *ghdma_memtomem_dma2_stream0;
 
 #endif /* INCLUDE_FS_CORE_H_ */
