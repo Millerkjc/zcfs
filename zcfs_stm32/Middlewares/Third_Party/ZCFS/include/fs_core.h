@@ -24,7 +24,7 @@
 #define write _write
 
 // Functions
-void fs_init(UART_HandleTypeDef *huart, DMA_HandleTypeDef *hdma_usart_tx, DMA_HandleTypeDef *hdma_usart_rx, DMA_HandleTypeDef *hdma_memtomem);
+void fs_init(UART_HandleTypeDef *huart, DMA_HandleTypeDef *hdma_usart_tx, DMA_HandleTypeDef *hdma_usart_rx);
 HAL_StatusTypeDef fs_write(int fd, char* ptr, int len);
 //HAL_StatusTypeDef fs_read(int fd, char* ptr, int len);
 HAL_StatusTypeDef flash_write(uint32_t address, uint32_t data, uint32_t data_len);
@@ -34,6 +34,5 @@ UART_HandleTypeDef *gHuart;
 main_buffer_t* mbuf;
 DMA_HandleTypeDef *ghdma_usart2_tx;
 DMA_HandleTypeDef *ghdma_usart2_rx;
-DMA_HandleTypeDef *ghdma_memtomem_dma2_stream0;
 
 #endif /* INCLUDE_FS_CORE_H_ */

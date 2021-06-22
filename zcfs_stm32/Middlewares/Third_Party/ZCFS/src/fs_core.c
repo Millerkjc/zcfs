@@ -14,11 +14,10 @@ extern int __user_data_start__, __user_data_end__;
 uint32_t write_ptr = _VZCFS_DISK_START;
 #define WORD_SIZE 4
 
-void RetargetInit(UART_HandleTypeDef *huart, DMA_HandleTypeDef *hdma_usart_tx, DMA_HandleTypeDef *hdma_usart_rx, DMA_HandleTypeDef *hdma_memtomem){
+void RetargetInit(UART_HandleTypeDef *huart, DMA_HandleTypeDef *hdma_usart_tx, DMA_HandleTypeDef *hdma_usart_rx){
   gHuart = huart;
   ghdma_usart2_tx = hdma_usart_tx;
   ghdma_usart2_rx = hdma_usart_rx;
-  ghdma_memtomem_dma2_stream0 = hdma_memtomem;
 
 
   /* Disable I/O buffering for STDOUT stream, so that
@@ -44,48 +43,11 @@ HAL_StatusTypeDef flash_write(uint32_t address, uint32_t data, uint32_t data_len
     return HAL_OK;
 }
 
-//HAL_StatusTypeDef flash_write(uint32_t address, char* data, uint32_t data_len){
-//    HAL_FLASH_Unlock();
-//
-////    FLASH_Erase_Sector(FLASH_SECTOR_4,VOLTAGE_RANGE_1);
-//
-////    uint32_t x = (uint32_t)&__user_data_start__;
-////    uint32_t y = (uint32_t)_VZCFS_DISK_START + (uint32_t)_VZCFS_DISK_SIZE;
-//
-//
-//
-//    // TODO WRITE WITH DMA?
-//
-//
-//
-//
-//
-////    FLASH_Erase_Sector(FLASH_SECTOR_6, FLASH_VOLTAGE_RANGE_1);
-////    FLASH_Erase_Sector(FLASH_SECTOR_7,VOLTAGE_RANGE_1);
-////    FLASH_Erase_Sector(FLASH_SECTOR_8,VOLTAGE_RANGE_1);
-////    FLASH_Erase_Sector(FLASH_SECTOR_9,VOLTAGE_RANGE_1);
-//
-////	for(int DataIdx = 0; DataIdx < data_len; DataIdx++)
-////	{
-//////		__io_putchar(*ptr++);
-//////		HAL_FLASH_Program(FLASH_TYPEPROGRAM_WORD, address, *data++);
-////
-////		// CORRECT
-////		//		HAL_FLASH_Program(FLASH_TYPEPROGRAM_BYTE, address++, *data++);
-////		HAL_FLASH_Program(FLASH_TYPEPROGRAM_BYTE, address++, *data);
-////	}
-//    HAL_FLASH_Lock();
-//
-//    return HAL_OK;
-//}
 
 
+void fs_init(UART_HandleTypeDef *huart, DMA_HandleTypeDef *hdma_usart_tx, DMA_HandleTypeDef *hdma_usart_rx){
 
-
-//void fs_init(UART_HandleTypeDef *huart){
-void fs_init(UART_HandleTypeDef *huart, DMA_HandleTypeDef *hdma_usart_tx, DMA_HandleTypeDef *hdma_usart_rx, DMA_HandleTypeDef *hdma_memtomem){
-
-	RetargetInit(huart, hdma_usart_tx, hdma_usart_rx, hdma_memtomem);
+	RetargetInit(huart, hdma_usart_tx, hdma_usart_rx);
 	mbuf = buffer_init(mbuf);
 
 

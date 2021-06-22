@@ -59,7 +59,6 @@ static void MX_DMA_Init(void);
 static void MX_USART2_UART_Init(void);
 /* USER CODE BEGIN PFP */
 //void DMATransferComplete(DMA_HandleTypeDef *hdma);
-//void DMATransferCompleteMemToMem(DMA_HandleTypeDef *hdma);
 /* USER CODE END PFP */
 
 /* Private user code ---------------------------------------------------------*/
@@ -101,7 +100,7 @@ int main(void)
   /* USER CODE BEGIN 2 */
 
 
-//  fs_init(&huart2, &hdma_usart2_tx, &hdma_usart2_rx, &hdma_memtomem_dma2_stream0);
+//  fs_init(&huart2, &hdma_usart2_tx, &hdma_usart2_rx);
 
 //  write(34, "test_write", 11);
 
@@ -120,33 +119,12 @@ int main(void)
 
   flash_write(dest, (uint32_t)msg, strlen(msg));
 
-//  RCC->AHB1ENR |= RCC_AHB1ENR_DMA2EN; // Enable DMA2 clock
-
-//  hdma_memtomem_dma2_stream0.Instance->CR |= (0b10 << DMA_SxCR_DIR_Pos) // Memory-to-memory Mode
-//		  | (0b01 << DMA_SxCR_PSIZE_Pos) // Source: 16-bit
-//		  | (0b01 << DMA_SxCR_MSIZE_Pos) // Destination: 16-bit
-//		  | DMA_SxCR_PINC // Increment source pointer
-//		  | DMA_SxCR_MINC; // Increment destination pointer
-//  hdma_memtomem_dma2_stream0.Instance->PAR = (uint32_t)source;
-//  hdma_memtomem_dma2_stream0.Instance->M0AR = (uint32_t)dest;
-//  hdma_memtomem_dma2_stream0.Instance->NDTR = len;
-//  hdma_memtomem_dma2_stream0.XferCpltCallback = &DMATransferCompleteMemToMem;
-//  hdma_memtomem_dma2_stream0.XferHalfCpltCallback = NULL;
-//  hdma_memtomem_dma2_stream0.XferErrorCallback = NULL;
-//
-//
-//  hdma_memtomem_dma2_stream0.Instance->CR |= DMA_SxCR_EN; // Start DMA transfer
-
-
-
 //	char msg[30] = "hello";
 
   // DMA initialization (Interrupt mode)
 //  HAL_DMA_Start_IT(&hdma_usart2_tx, (uint32_t)msg, (uint32_t)&huart2.Instance->DR, strlen(msg));
-//  HAL_DMA_Start_IT(&hdma_memtomem_dma2_stream0, (uint32_t)&source, 0x08041000, len);
   // Enable UART in DMA mode
 //  huart2.Instance->CR3 |= USART_CR3_DMAT;
-//  hdma_memtomem_dma2_stream0.Instance->CR |= USART_CR3_DMAT;
 
 
 
@@ -303,16 +281,6 @@ static void MX_GPIO_Init(void)
 ////	  HAL_GPIO_WritePin(GPIOD, GPIO_PIN_14, GPIO_PIN_SET);
 //  }
 //}
-//
-//
-//void DMATransferCompleteMemToMem(DMA_HandleTypeDef *hdma){
-//  if(hdma->Instance == DMA2_Stream0){
-//	  // Turn Red Led On
-//	  HAL_GPIO_WritePin(GPIOD, GPIO_PIN_14, GPIO_PIN_SET);
-//  }
-//}
-
-
 /* USER CODE END 4 */
 
 /**

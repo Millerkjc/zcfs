@@ -159,9 +159,9 @@ void HAL_UART_MspInit(UART_HandleTypeDef* huart)
     HAL_NVIC_EnableIRQ(USART2_IRQn);
   /* USER CODE BEGIN USART2_MspInit 1 */
 
-    hdma_usart2_tx.XferCpltCallback = &DMATransferComplete;
-    hdma_usart2_tx.XferHalfCpltCallback = NULL;
-    hdma_usart2_tx.XferErrorCallback = NULL;
+//    hdma_usart2_tx.XferCpltCallback = &DMATransferComplete;
+//    hdma_usart2_tx.XferHalfCpltCallback = NULL;
+//    hdma_usart2_tx.XferErrorCallback = NULL;
 
     __HAL_LINKDMA(huart,hdmarx,hdma_usart2_rx);
 
