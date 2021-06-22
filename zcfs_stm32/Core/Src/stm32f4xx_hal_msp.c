@@ -146,9 +146,6 @@ void HAL_UART_MspInit(UART_HandleTypeDef* huart)
     hdma_usart2_rx.Init.MemDataAlignment = DMA_MDATAALIGN_BYTE;
     hdma_usart2_rx.Init.Mode = DMA_NORMAL;
     hdma_usart2_rx.Init.Priority = DMA_PRIORITY_LOW;
-    hdma_usart2_tx.XferCpltCallback = &DMATransferComplete;
-    hdma_usart2_tx.XferHalfCpltCallback = NULL;
-    hdma_usart2_tx.XferErrorCallback = NULL;
     hdma_usart2_rx.Init.FIFOMode = DMA_FIFOMODE_DISABLE;
     if (HAL_DMA_Init(&hdma_usart2_rx) != HAL_OK)
     {
@@ -161,6 +158,12 @@ void HAL_UART_MspInit(UART_HandleTypeDef* huart)
     HAL_NVIC_SetPriority(USART2_IRQn, 0, 0);
     HAL_NVIC_EnableIRQ(USART2_IRQn);
   /* USER CODE BEGIN USART2_MspInit 1 */
+
+    hdma_usart2_tx.XferCpltCallback = &DMATransferComplete;
+    hdma_usart2_tx.XferHalfCpltCallback = NULL;
+    hdma_usart2_tx.XferErrorCallback = NULL;
+
+    __HAL_LINKDMA(huart,hdmarx,hdma_usart2_rx);
 
   /* USER CODE END USART2_MspInit 1 */
   }
