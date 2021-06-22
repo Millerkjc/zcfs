@@ -23,31 +23,39 @@
 //#define _VZCFS_DISK_SIZE 524288
 //uint32_t write_ptr = _VZCFS_DISK_START;
 
-
 #define STDIN_FILENO  0
 #define STDOUT_FILENO 1
 #define STDERR_FILENO 2
 
 
-//__attribute__((weak)) int _read(int file, char *ptr, int len)
-//{
-//	int DataIdx;
-//
-//	for (DataIdx = 0; DataIdx < len; DataIdx++)
-//	{
-//		*ptr++ = __io_getchar();
-//	}
-//
-//return len;
-//}
+int find_file(char* file_name){
+	return -1;
+}
 
+
+int _myinit(UART_HandleTypeDef *huart, DMA_HandleTypeDef *hdma_usart_tx, DMA_HandleTypeDef *hdma_usart_rx){
+	fs_init(huart, hdma_usart_tx, hdma_usart_rx);
+
+	return 1;
+}
+
+
+int _read(int file, char *ptr, int len)
+{
+	int DataIdx;
+
+	for (DataIdx = 0; DataIdx < len; DataIdx++)
+	{
+//		*ptr++ = __io_getchar();
+	}
+
+return len;
+}
 
 
 
 //void inode_write(char* data, uint32_t data_len);
 //void data_write(char* data, uint32_t data_len);
-
-
 
 int _write(int fd, char* ptr, int len) {
   HAL_StatusTypeDef hstatus;
@@ -66,4 +74,30 @@ int _write(int fd, char* ptr, int len) {
 
   errno = EBADF;
   return -1;
+}
+
+int _open(char* file_name)
+{
+
+
+	int fd = find_file(file_name);
+
+	// File not exists
+	if (fd == -1){
+		/*
+		 * Create file
+		 */
+		// TODO redefine fd -> generate fd
+		// TODO call _open((uint32_t)fd, 3); // open file in write/read
+								   	   	     // returns 1 success/0 fail
+	}
+
+	return (uint32_t)fd;
+
+
+}
+
+int _close(int file)
+{
+	return -1;
 }

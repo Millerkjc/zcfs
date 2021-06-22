@@ -3,11 +3,10 @@
 #include "assert.h"
 #include <string.h>
 
-#include "fs_core.h"
-
 #ifndef INCLUDE_FS_MEM_H_
 #define INCLUDE_FS_MEM_H_
-#include "fs_mem.h"
+#include "fs_core.h"
+//#include "fs_mem.h"
 #endif
 
 #ifndef TEST_H_

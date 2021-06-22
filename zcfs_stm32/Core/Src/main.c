@@ -102,6 +102,11 @@ int main(void)
 
 //  fs_init(&huart2, &hdma_usart2_tx, &hdma_usart2_rx);
 
+  // TODO
+  zcfs_init(&huart2, &hdma_usart2_tx, &hdma_usart2_rx);
+
+
+
 //  write(34, "test_write", 11);
 
 
@@ -112,12 +117,16 @@ int main(void)
 //	  source[i] = i;
 //  }
 
-  int len = 6;
-  char source[32] = "hello";
-//  char dest[32] = "prova";
-  uint32_t dest = 0x08041000;
+//  int len = 6;
+//  char source[32] = "hello";
+////  char dest[32] = "prova";
+//  uint32_t dest = 0x08041000;
 
-  flash_write(dest, (uint32_t)msg, strlen(msg));
+
+
+//  int idx = 0;
+//  open(idx, 3);
+//  flash_write(dest, (uint32_t)msg, strlen(msg));
 
 //	char msg[30] = "hello";
 

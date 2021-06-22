@@ -12,6 +12,6 @@
  * Memory location
  */
 //uint32_t superblock_pointer_t = ((uint32_t)_UP_MEMORY_LIMIT) - (sizeof(superblock_t)/sizeof(ifile_t*));
-uint32_t superblock_pointer_t = SUPERBLOCK_ADDRESS((sizeof(superblock_t)/sizeof(ifile_t*)));
+//uint32_t superblock_pointer_t = SUPERBLOCK_ADDRESS((sizeof(superblock_t)/sizeof(ifile_t*)));
 
 #endif /* INCLUDE_FS_MEM_H_ */

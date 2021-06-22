@@ -12,9 +12,6 @@
 #ifndef THIRD_PARTY_ZCFS_INCLUDE_FS_UTIL_H_
 #define THIRD_PARTY_ZCFS_INCLUDE_FS_UTIL_H_
 
-#ifdef __cplusplus
- extern "C" {
-#endif
 
  /*
   * Memory location and limits
@@ -51,10 +48,6 @@
 #define _BUFFER_SIZE_4K  ((uint16_t)0x1000) //  4094 - 4K
 #define _BUFFER_SIZE_16K ((uint16_t)0x4000) // 16384 - 16K
 #define _BUFFER_SIZE_32K ((uint16_t)0x8000) // 32768 - 32K
-
-#ifdef __cplusplus
-}
-#endif
 
 
 

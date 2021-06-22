@@ -13,6 +13,12 @@ extern int __user_data_start__, __user_data_end__;
 #define _VZCFS_DISK_SIZE 524288
 uint32_t write_ptr = _VZCFS_DISK_START;
 #define WORD_SIZE 4
+uint32_t superblock_pointer_t = SUPERBLOCK_ADDRESS((sizeof(superblock_t)/sizeof(ifile_t*)));
+
+
+/*
+ * Private methods
+ */
 
 void RetargetInit(UART_HandleTypeDef *huart, DMA_HandleTypeDef *hdma_usart_tx, DMA_HandleTypeDef *hdma_usart_rx){
   gHuart = huart;
@@ -47,10 +53,52 @@ HAL_StatusTypeDef flash_write(uint32_t address, uint32_t data, uint32_t data_len
 
 
 
+
+/*
+ * Public methods
+ */
+
 void fs_init(UART_HandleTypeDef *huart, DMA_HandleTypeDef *hdma_usart_tx, DMA_HandleTypeDef *hdma_usart_rx){
 
 	RetargetInit(huart, hdma_usart_tx, hdma_usart_rx);
 	mbuf = buffer_init(mbuf);
+	// TODO write superblock in FLASH
+//	flash_write(, )
+
+//	superblock_t[0] = malloc(sizeof(ifile_t));
+//	superblock_t[0]->data_ptr = NULL;
+//	superblock_t[0]->id = 123;
+//	strcpy(superblock_t[0]->name,"hello");
+//	superblock_t[0]->next_dinode = NULL;
+//	superblock_t[0]->size = 345;
+//	superblock_t[0]->time = 456;
+//
+//	superblock_t[1] = malloc(sizeof(ifile_t));
+//	superblock_t[1]->data_ptr = NULL;
+//	superblock_t[1]->id = 321;
+//	strcpy(superblock_t[1]->name, "hello2");
+//	superblock_t[1]->next_dinode = NULL;
+//	superblock_t[1]->size = 543;
+//	superblock_t[1]->time = 654;
+//
+//	flash_write(superblock_pointer_t, (uint32_t)superblock_t[0], sizeof(ifile_t));
+
+
+	ifile_t f1;
+	f1.data_ptr = NULL;
+	f1.id = 123;
+	strcpy(f1.name,"hello");
+	f1.next_dinode = NULL;
+	f1.size = 345;
+	f1.time = 456;
+
+	char* s = "aaaa";
+
+
+//	flash_write(superblock_pointer_t, (uint32_t)&s, strlen(s));
+	flash_write(0x08050000, (uint32_t)s, strlen(s));
+	flash_write(0x08041000, (uint32_t)s, strlen(s));
+
 
 //	char msg[30] = "hello";
 //
@@ -72,7 +120,15 @@ void fs_init(UART_HandleTypeDef *huart, DMA_HandleTypeDef *hdma_usart_tx, DMA_Ha
 }
 
 
-HAL_StatusTypeDef fs_write(int fd, char* ptr, int len){
+
+uint32_t fs_open(uint32_t fd, int flags, ...){
+
+	// TODO allocate buffer, create superblock entry, inode, etc.
+	return -1;
+}
+
+
+HAL_StatusTypeDef fs_write(uint32_t fd, char* ptr, uint32_t len){
 
 	HAL_StatusTypeDef hstatus = buffer_insert(mbuf, fd, ptr, len);
 
