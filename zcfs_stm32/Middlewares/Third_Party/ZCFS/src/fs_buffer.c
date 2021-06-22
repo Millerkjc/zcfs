@@ -75,8 +75,8 @@ HAL_StatusTypeDef fbuffer_insert(file_buffer_t* fbuf, char *data, uint32_t len){
  */
 void fbuffer_flush(file_buffer_t* fbuf){
 	// TODO write in mem
-	// inode_write
-	// data_write
+	// TODO inode_write
+	// TODO data_write
 
 	free(&fbuf->file_buffer);
 	fbuf->file_buffer = NULL;

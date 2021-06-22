@@ -11,21 +11,6 @@
 #define INCLUDE_FS_BUFFER_H_
 
 /*
- * Superblock and file inodes
- */
-/* block per file: 4 + 16 + 4 + 4 + 4 = 32 byte */
-typedef struct __attribute__((__packed__)) inode_file{
-	uint32_t id;			/* file identifier 		 */
-	char name[16]; 		 	/* 15 + '\0' 			 */
-	char* inode_ptr;    	/* list of chunks        */  // LINKED LIST
-	uint32_t time;			/* time of the last edit */
-	uint32_t size;			/* size of the file 	 */
-} ifile_t;
-
-/* Singleton Superblock */
-ifile_t* superblock_t[_INODE_LIST_LIMIT];
-
-/*
  * Buffers: main buffer and buffer of the files
  */
 typedef struct __attribute__((__packed__)) buffer_file{

@@ -25,7 +25,9 @@ void RetargetInit(UART_HandleTypeDef *huart, DMA_HandleTypeDef *hdma_usart_tx, D
   setvbuf(stdout, NULL, _IONBF, 0);
 }
 
-
+/*
+ * https://stackoverflow.com/questions/54159802/how-to-write-to-stm32-flash
+ */
 HAL_StatusTypeDef flash_write(uint32_t address, uint32_t data, uint32_t data_len){
     HAL_FLASH_Unlock();
 
@@ -49,7 +51,6 @@ void fs_init(UART_HandleTypeDef *huart, DMA_HandleTypeDef *hdma_usart_tx, DMA_Ha
 
 	RetargetInit(huart, hdma_usart_tx, hdma_usart_rx);
 	mbuf = buffer_init(mbuf);
-
 
 //	char msg[30] = "hello";
 //
