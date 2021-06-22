@@ -27,6 +27,7 @@
 void fs_init(UART_HandleTypeDef *huart, DMA_HandleTypeDef *hdma_usart_tx, DMA_HandleTypeDef *hdma_usart_rx, DMA_HandleTypeDef *hdma_memtomem);
 HAL_StatusTypeDef fs_write(int fd, char* ptr, int len);
 //HAL_StatusTypeDef fs_read(int fd, char* ptr, int len);
+HAL_StatusTypeDef flash_write(uint32_t address, uint32_t data, uint32_t data_len);
 
 // Variables
 UART_HandleTypeDef *gHuart;

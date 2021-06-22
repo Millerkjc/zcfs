@@ -118,6 +118,8 @@ int main(void)
 //  char dest[32] = "prova";
   uint32_t dest = 0x08041000;
 
+  flash_write(dest, (uint32_t)msg, strlen(msg));
+
 //  RCC->AHB1ENR |= RCC_AHB1ENR_DMA2EN; // Enable DMA2 clock
 
 //  hdma_memtomem_dma2_stream0.Instance->CR |= (0b10 << DMA_SxCR_DIR_Pos) // Memory-to-memory Mode
@@ -145,6 +147,8 @@ int main(void)
   // Enable UART in DMA mode
 //  huart2.Instance->CR3 |= USART_CR3_DMAT;
 //  hdma_memtomem_dma2_stream0.Instance->CR |= USART_CR3_DMAT;
+
+
 
 
   /*

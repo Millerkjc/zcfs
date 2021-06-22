@@ -12,17 +12,7 @@ extern int __user_data_start__, __user_data_end__;
 #define _VZCFS_DISK_START (uint32_t)&__user_data_start__
 #define _VZCFS_DISK_SIZE 524288
 uint32_t write_ptr = _VZCFS_DISK_START;
-
-//// DMA CALLBACK
-//void DMATransferComplete(DMA_HandleTypeDef *hdma){
-//  if(hdma->Instance == DMA1_Stream6){
-//	  // Disable UART DMA mode
-//	  gHuart->Instance->CR3 &= ~USART_CR3_DMAT;
-//	  // Turn Red Led On
-//	  HAL_GPIO_TogglePin(GPIOD, GPIO_PIN_15);
-//	  HAL_Delay(500);
-//  }
-//}
+#define WORD_SIZE 4
 
 void RetargetInit(UART_HandleTypeDef *huart, DMA_HandleTypeDef *hdma_usart_tx, DMA_HandleTypeDef *hdma_usart_rx, DMA_HandleTypeDef *hdma_memtomem){
   gHuart = huart;
@@ -37,40 +27,57 @@ void RetargetInit(UART_HandleTypeDef *huart, DMA_HandleTypeDef *hdma_usart_tx, D
 }
 
 
-HAL_StatusTypeDef flash_write(uint32_t address, char* data, uint32_t data_len){
+HAL_StatusTypeDef flash_write(uint32_t address, uint32_t data, uint32_t data_len){
     HAL_FLASH_Unlock();
 
-//    FLASH_Erase_Sector(FLASH_SECTOR_4,VOLTAGE_RANGE_1);
+    /*
+     * Counts how many WORDS it has to write
+     */
+    uint32_t word_count = (int)data_len/WORD_SIZE;
+    word_count = !data_len%WORD_SIZE ? word_count : word_count+1;
 
-//    uint32_t x = (uint32_t)&__user_data_start__;
-//    uint32_t y = (uint32_t)_VZCFS_DISK_START + (uint32_t)_VZCFS_DISK_SIZE;
+    for(int i=0; i<word_count; i++)
+    	HAL_FLASH_Program(FLASH_TYPEPROGRAM_WORD, address + WORD_SIZE*i, *(uint32_t *)(data + WORD_SIZE*i));
 
-
-
-    // TODO WRITE WITH DMA?
-
-
-
-
-
-//    FLASH_Erase_Sector(FLASH_SECTOR_6, FLASH_VOLTAGE_RANGE_1);
-//    FLASH_Erase_Sector(FLASH_SECTOR_7,VOLTAGE_RANGE_1);
-//    FLASH_Erase_Sector(FLASH_SECTOR_8,VOLTAGE_RANGE_1);
-//    FLASH_Erase_Sector(FLASH_SECTOR_9,VOLTAGE_RANGE_1);
-
-//	for(int DataIdx = 0; DataIdx < data_len; DataIdx++)
-//	{
-////		__io_putchar(*ptr++);
-////		HAL_FLASH_Program(FLASH_TYPEPROGRAM_WORD, address, *data++);
-//
-//		// CORRECT
-//		//		HAL_FLASH_Program(FLASH_TYPEPROGRAM_BYTE, address++, *data++);
-//		HAL_FLASH_Program(FLASH_TYPEPROGRAM_BYTE, address++, *data);
-//	}
     HAL_FLASH_Lock();
 
     return HAL_OK;
 }
+
+//HAL_StatusTypeDef flash_write(uint32_t address, char* data, uint32_t data_len){
+//    HAL_FLASH_Unlock();
+//
+////    FLASH_Erase_Sector(FLASH_SECTOR_4,VOLTAGE_RANGE_1);
+//
+////    uint32_t x = (uint32_t)&__user_data_start__;
+////    uint32_t y = (uint32_t)_VZCFS_DISK_START + (uint32_t)_VZCFS_DISK_SIZE;
+//
+//
+//
+//    // TODO WRITE WITH DMA?
+//
+//
+//
+//
+//
+////    FLASH_Erase_Sector(FLASH_SECTOR_6, FLASH_VOLTAGE_RANGE_1);
+////    FLASH_Erase_Sector(FLASH_SECTOR_7,VOLTAGE_RANGE_1);
+////    FLASH_Erase_Sector(FLASH_SECTOR_8,VOLTAGE_RANGE_1);
+////    FLASH_Erase_Sector(FLASH_SECTOR_9,VOLTAGE_RANGE_1);
+//
+////	for(int DataIdx = 0; DataIdx < data_len; DataIdx++)
+////	{
+//////		__io_putchar(*ptr++);
+//////		HAL_FLASH_Program(FLASH_TYPEPROGRAM_WORD, address, *data++);
+////
+////		// CORRECT
+////		//		HAL_FLASH_Program(FLASH_TYPEPROGRAM_BYTE, address++, *data++);
+////		HAL_FLASH_Program(FLASH_TYPEPROGRAM_BYTE, address++, *data);
+////	}
+//    HAL_FLASH_Lock();
+//
+//    return HAL_OK;
+//}
 
 
 
