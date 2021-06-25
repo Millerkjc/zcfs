@@ -56,6 +56,7 @@ extern DMA_HandleTypeDef hdma_usart2_rx;
 /* External functions --------------------------------------------------------*/
 /* USER CODE BEGIN ExternalFunctions */
 extern void DMATransferComplete(DMA_HandleTypeDef *hdma);
+extern void DMAReceiveComplete(DMA_HandleTypeDef *hdma);
 /* USER CODE END ExternalFunctions */
 
 /* USER CODE BEGIN 0 */
@@ -94,12 +95,6 @@ void HAL_UART_MspInit(UART_HandleTypeDef* huart)
   if(huart->Instance==USART2)
   {
   /* USER CODE BEGIN USART2_MspInit 0 */
-
-	// DMA CALLBACK
-//    hdma_usart2_tx.XferCpltCallback = &DMATransferComplete;
-//    hdma_usart2_tx.XferHalfCpltCallback = NULL;
-//	hdma_usart2_tx.XferErrorCallback = NULL;
-
 
   /* USER CODE END USART2_MspInit 0 */
     /* Peripheral clock enable */
@@ -159,11 +154,19 @@ void HAL_UART_MspInit(UART_HandleTypeDef* huart)
     HAL_NVIC_EnableIRQ(USART2_IRQn);
   /* USER CODE BEGIN USART2_MspInit 1 */
 
-//    hdma_usart2_tx.XferCpltCallback = &DMATransferComplete;
-//    hdma_usart2_tx.XferHalfCpltCallback = NULL;
-//    hdma_usart2_tx.XferErrorCallback = NULL;
+    // Read
+    hdma_usart2_rx.XferCpltCallback = &DMAReceiveComplete;
+    hdma_usart2_rx.XferHalfCpltCallback = NULL;
+    hdma_usart2_rx.XferErrorCallback = NULL;
 
     __HAL_LINKDMA(huart,hdmarx,hdma_usart2_rx);
+
+    // Write
+    hdma_usart2_tx.XferCpltCallback = &DMATransferComplete;
+    hdma_usart2_tx.XferHalfCpltCallback = NULL;
+    hdma_usart2_tx.XferErrorCallback = NULL;
+
+    __HAL_LINKDMA(huart,hdmatx,hdma_usart2_tx);
 
   /* USER CODE END USART2_MspInit 1 */
   }

@@ -58,7 +58,8 @@ static void MX_GPIO_Init(void);
 static void MX_DMA_Init(void);
 static void MX_USART2_UART_Init(void);
 /* USER CODE BEGIN PFP */
-//void DMATransferComplete(DMA_HandleTypeDef *hdma);
+void DMATransferComplete(DMA_HandleTypeDef *hdma);
+void DMAReceiveComplete(DMA_HandleTypeDef *hdma);
 /* USER CODE END PFP */
 
 /* Private user code ---------------------------------------------------------*/
@@ -102,9 +103,16 @@ int main(void)
 
 //  fs_init(&huart2, &hdma_usart2_tx, &hdma_usart2_rx);
 
+
+
+
   // TODO
   zcfs_init(&huart2, &hdma_usart2_tx, &hdma_usart2_rx);
 
+
+//  gHuart->Instance->CR3 |= USART_CR3_DMAT;
+
+//  HAL_DMA_Start_IT(&hdma_usart2_tx, (uint32_t)msg, (uint32_t)&huart2.Instance->DR, strlen(msg));
 
 
 //  write(34, "test_write", 11);
@@ -134,8 +142,6 @@ int main(void)
 //  HAL_DMA_Start_IT(&hdma_usart2_tx, (uint32_t)msg, (uint32_t)&huart2.Instance->DR, strlen(msg));
   // Enable UART in DMA mode
 //  huart2.Instance->CR3 |= USART_CR3_DMAT;
-
-
 
 
   /*
@@ -247,10 +253,10 @@ static void MX_DMA_Init(void)
 
   /* DMA interrupt init */
   /* DMA1_Stream5_IRQn interrupt configuration */
-  HAL_NVIC_SetPriority(DMA1_Stream5_IRQn, 0, 0);
+  HAL_NVIC_SetPriority(DMA1_Stream5_IRQn, 1, 0);
   HAL_NVIC_EnableIRQ(DMA1_Stream5_IRQn);
   /* DMA1_Stream6_IRQn interrupt configuration */
-  HAL_NVIC_SetPriority(DMA1_Stream6_IRQn, 0, 0);
+  HAL_NVIC_SetPriority(DMA1_Stream6_IRQn, 1, 0);
   HAL_NVIC_EnableIRQ(DMA1_Stream6_IRQn);
 
 }
@@ -269,10 +275,10 @@ static void MX_GPIO_Init(void)
   __HAL_RCC_GPIOD_CLK_ENABLE();
 
   /*Configure GPIO pin Output Level */
-  HAL_GPIO_WritePin(GPIOD, GPIO_PIN_14, GPIO_PIN_RESET);
+  HAL_GPIO_WritePin(GPIOD, Green_Led_Pin|Red_Led_Pin, GPIO_PIN_RESET);
 
-  /*Configure GPIO pin : PD14 */
-  GPIO_InitStruct.Pin = GPIO_PIN_14;
+  /*Configure GPIO pins : Green_Led_Pin Red_Led_Pin */
+  GPIO_InitStruct.Pin = Green_Led_Pin|Red_Led_Pin;
   GPIO_InitStruct.Mode = GPIO_MODE_OUTPUT_PP;
   GPIO_InitStruct.Pull = GPIO_NOPULL;
   GPIO_InitStruct.Speed = GPIO_SPEED_FREQ_LOW;
@@ -281,15 +287,25 @@ static void MX_GPIO_Init(void)
 }
 
 /* USER CODE BEGIN 4 */
-//// DMA CALLBACK
-//void DMATransferComplete(DMA_HandleTypeDef *hdma){
-//  if(hdma->Instance == DMA1_Stream6){
-//	  // Disable UART DMA mode
-//	  huart2.Instance->CR3 &= ~USART_CR3_DMAT;
-//	  // Turn Red Led On
-////	  HAL_GPIO_WritePin(GPIOD, GPIO_PIN_14, GPIO_PIN_SET);
-//  }
-//}
+//// DMA WRITE CALLBACK
+void DMATransferComplete(DMA_HandleTypeDef *hdma){
+  if(hdma->Instance == DMA1_Stream6){
+	  // Turn Red Led On
+	  HAL_GPIO_WritePin(GPIOD, GPIO_PIN_14, GPIO_PIN_SET);
+//	  HAL_Delay(50);
+//	  HAL_GPIO_WritePin(GPIOD, GPIO_PIN_14, GPIO_PIN_RESET);
+  }
+}
+
+//// DMA READ CALLBACK
+void DMAReceiveComplete(DMA_HandleTypeDef *hdma){
+  if(hdma->Instance == DMA1_Stream5){
+	  // Turn Green Led On
+	  HAL_GPIO_WritePin(GPIOD, GPIO_PIN_12, GPIO_PIN_SET);
+//	  HAL_Delay(50);
+//	  HAL_GPIO_WritePin(GPIOD, GPIO_PIN_12, GPIO_PIN_RESET);
+  }
+}
 /* USER CODE END 4 */
 
 /**
