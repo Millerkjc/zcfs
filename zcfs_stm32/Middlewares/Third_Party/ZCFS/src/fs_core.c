@@ -6,6 +6,7 @@
  */
 
 #include "fs_core.h"
+#include "stm32f407xx.h"
 
 void* __attribute((__section__(".user_data"))) user_data;
 extern int __user_data_start__, __user_data_end__;
@@ -83,38 +84,66 @@ void fs_init(UART_HandleTypeDef *huart, DMA_HandleTypeDef *hdma_usart_tx, DMA_Ha
 //
 //	flash_write(superblock_pointer_t, (uint32_t)superblock_t[0], sizeof(ifile_t));
 
-
-	ifile_t f1;
-	f1.data_ptr = NULL;
-	f1.id = 123;
-	strcpy(f1.name,"hello");
-	f1.next_dinode = NULL;
-	f1.size = 345;
-	f1.time = 456;
-
-	char* s = "aaaa";
+//
+	char* s = "ciao mammaaaaa";
+	char* s2 = "hello mammaaaaa";
 
 
-//	flash_write(superblock_pointer_t, (uint32_t)&s, strlen(s));
-	flash_write(0x08050000, (uint32_t)s, strlen(s));
+//	 uint32_t SectorError;
+//	 FLASH_EraseInitTypeDef EraseInitStruct;
+//	 EraseInitStruct.TypeErase = FLASH_TYPEERASE_SECTORS;
+//	 EraseInitStruct.VoltageRange = FLASH_VOLTAGE_RANGE_3;
+//	 EraseInitStruct.Sector = FLASH_SECTOR_6; //Specify sector number
+//	 EraseInitStruct.NbSectors = 1; //This is also important!
+//	 if(HAL_FLASHEx_Erase(&EraseInitStruct, &SectorError) != HAL_OK) {
+//		 //Erase error!
+//			 sprintf(s, "bbbb");
+//	 }
+//
+	 FLASH_Erase_Sector(FLASH_SECTOR_6,VOLTAGE_RANGE_4);
+	 FLASH_Erase_Sector(FLASH_SECTOR_7,VOLTAGE_RANGE_4);
+	 FLASH_Erase_Sector(FLASH_SECTOR_8,VOLTAGE_RANGE_4);
+	 FLASH_Erase_Sector(FLASH_SECTOR_9,VOLTAGE_RANGE_1);
+	 FLASH_Erase_Sector(FLASH_SECTOR_10,VOLTAGE_RANGE_1);
+	 FLASH_Erase_Sector(FLASH_SECTOR_11,VOLTAGE_RANGE_1);
+//
+//
+//	 EraseInitStruct.TypeErase = FLASH_TYPEERASE_SECTORS;
+//	 EraseInitStruct.VoltageRange = FLASH_VOLTAGE_RANGE_3;
+//	 EraseInitStruct.Sector = FLASH_SECTOR_7; //Specify sector number
+//	 EraseInitStruct.NbSectors = 1; //This is also important!
+//	 if(HAL_FLASHEx_Erase(&EraseInitStruct, &SectorError) != HAL_OK) {
+//		 //Erase error!
+//			 sprintf(s, "bbbb");
+//	 }
+
+
+
+
+	__HAL_FLASH_CLEAR_FLAG(FLASH_FLAG_EOP    | FLASH_FLAG_OPERR | FLASH_FLAG_WRPERR | FLASH_FLAG_PGAERR | FLASH_FLAG_PGPERR| FLASH_FLAG_PGSERR);
+
+	flash_write(superblock_pointer_t, (uint32_t)s, strlen(s));
+	__HAL_FLASH_CLEAR_FLAG(FLASH_FLAG_EOP    | FLASH_FLAG_OPERR | FLASH_FLAG_WRPERR | FLASH_FLAG_PGAERR | FLASH_FLAG_PGPERR| FLASH_FLAG_PGSERR);
+
+	flash_write(0x0805fffc, (uint32_t)s, strlen(s));
+//	flash_write(0x0805fffc, (uint32_t)s2, strlen(s2));
+//	flash_write(0x0805fffc, (uint32_t)s, strlen(s));
+
+	flash_write(0x08060000, (uint32_t)s, strlen(s));
+	__HAL_FLASH_CLEAR_FLAG(FLASH_FLAG_EOP    | FLASH_FLAG_OPERR | FLASH_FLAG_WRPERR | FLASH_FLAG_PGAERR | FLASH_FLAG_PGPERR| FLASH_FLAG_PGSERR);
+
 	flash_write(0x08041000, (uint32_t)s, strlen(s));
 
+	__HAL_FLASH_CLEAR_FLAG(FLASH_FLAG_EOP    | FLASH_FLAG_OPERR | FLASH_FLAG_WRPERR | FLASH_FLAG_PGAERR | FLASH_FLAG_PGPERR| FLASH_FLAG_PGSERR);
 
 //	char msg[30] = "hello";
-//
-//	// DMA initialization (Interrupt mode)
-//	HAL_DMA_Start_IT(ghdma_usart2_tx, (uint32_t)msg, (uint32_t)gHuart->Instance->DR, strlen(msg));
-//	// Enable UART in DMA mode
-//	gHuart->Instance->CR3 |= USART_CR3_DMAT;
 
 
-
-
-//	TODO Uncomment when released
+//	TODO Uncomment when released?
 //	uint32_t address = (uint32_t)_VZCFS_DISK_START;
 //	for(int DataIdx = 0; DataIdx < (uint32_t)_VZCFS_DISK_SIZE; DataIdx++)
 //	{
-//	    HAL_FLASH_Program(FLASH_TYPEPROGRAM_BYTE, address++, 0x0);
+//	    HAL_FLASH_Program(FLASH_TYPEPROGRAM_BYTE, address++, 0xF);
 //	}
 
 }
