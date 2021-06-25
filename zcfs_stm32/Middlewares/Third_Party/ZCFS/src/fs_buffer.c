@@ -14,7 +14,7 @@
  * All methods for buffering data, etc.
  */
 
-#define _BUFFER_SIZE _BUFFER_SIZE_16K
+#define _BUFFER_SIZE _BUFFER_SIZE_4K
 #define _FBUFFER_INIT_SIZE 12
 
 /*
@@ -76,7 +76,6 @@ HAL_StatusTypeDef fbuffer_insert(file_buffer_t* fbuf, char *data, uint32_t len){
 void fbuffer_flush(file_buffer_t* fbuf){
 	// TODO write in mem
 	// TODO inode_write
-	// TODO data_write
 
 	free(&fbuf->file_buffer);
 	fbuf->file_buffer = NULL;

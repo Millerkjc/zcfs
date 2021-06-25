@@ -16,6 +16,19 @@
 #define INCLUDE_FS_CORE_H_
 
 //#define write _write
+#define HEADER_SIZE 11
+#define SERIAL_PKT 0
+#define SERIAL_PKT_HEADER "zcfs_serial"
+#define WRITE_PKT 1
+#define WRITE_PKT_HEADER "zcfs_write_"
+#define READ_PKT 2
+#define READ_PKT_HEADER "zcfs_read_"
+#define ERROR_PKT_HEADER "zcfs_error"
+
+#define CHUNK_DELIMITER "@"
+#define DATA_DELIMITER "#"
+//#define DELIMITER_SIZE 4
+
 
 // Functions
 void fs_init(UART_HandleTypeDef *huart, DMA_HandleTypeDef *hdma_usart_tx, DMA_HandleTypeDef *hdma_usart_rx);

@@ -14,15 +14,35 @@ uint32_t write_ptr = _VZCFS_DISK_START;
 #define WORD_SIZE 4
 uint32_t superblock_pointer_t = SUPERBLOCK_ADDRESS((sizeof(superblock_t)/sizeof(ifile_t*)));
 
-
 /*
  * Private methods
  */
+
+
+void get_header(char *header, uint32_t type){
+
+	switch(type){
+		case 0:
+			strcpy(header, SERIAL_PKT_HEADER);
+			break;
+		case 1:
+			strcpy(header, WRITE_PKT_HEADER);
+			break;
+		case 2:
+			strcpy(header, READ_PKT_HEADER);
+			break;
+		default:
+			strcpy(header, ERROR_PKT_HEADER);
+			break;
+	}
+}
 
 void RetargetInit(UART_HandleTypeDef *huart, DMA_HandleTypeDef *hdma_usart_tx, DMA_HandleTypeDef *hdma_usart_rx){
   gHuart = huart;
   ghdma_usart2_tx = hdma_usart_tx;
   ghdma_usart2_rx = hdma_usart_rx;
+  // Enable UART in DMA mode
+  gHuart->Instance->CR3 |= USART_CR3_DMAT;
 
 
   /* Disable I/O buffering for STDOUT stream, so that
@@ -31,26 +51,71 @@ void RetargetInit(UART_HandleTypeDef *huart, DMA_HandleTypeDef *hdma_usart_tx, D
 }
 
 /*
- * https://stackoverflow.com/questions/54159802/how-to-write-to-stm32-flash
+ * Packet format: HEADER @ RAW_DATA(address:data) @ INODE_INFO(address:data)
+ * 		      Es: "zcfs_write_@FLASH#RAW_DATA@INODE#ADDRESS"
  */
-HAL_StatusTypeDef flash_write(uint32_t address, uint32_t data, uint32_t data_len){
-    HAL_FLASH_Unlock();
+//HAL_StatusTypeDef create_packet(uint32_t type, uint32_t inode_info, uint32_t inode_address, uint32_t data_buffer, uint32_t data_len, uint32_t address_buffer){
+//	// TODO Create timer - if no full buffer
+//
+//	char *header, packet;
+//
+//	header = malloc(HEADER_SIZE);
+//	get_header(header, type);
+//
+//	packet = malloc(HEADER_SIZE + data_len + DELIMITER_SIZE);
+//
+//	memcpy(packet, header, HEADER_SIZE);
+//
+//	memcpy(packet + sizeof(packet), CHUNK_DELIMITER, 1);
+//	memcpy(packet + sizeof(packet), address_buffer, sizeof(address_buffer));
+//	memcpy(packet + sizeof(packet), DATA_DELIMITER, 1);
+//	memcpy(packet + sizeof(packet), data_buffer, data_len);
+//
+//	memcpy(packet + sizeof(packet), CHUNK_DELIMITER, 1);
+//	memcpy(packet + sizeof(packet), inode_info, sizeof(inode_info));
+//	memcpy(packet + sizeof(packet), DATA_DELIMITER, 1);
+//	memcpy(packet + sizeof(packet), inode_address, sizeof(inode_address));
+//
+//
+//	HAL_DMA_Start_IT(&ghdma_usart2_tx, (uint32_t)packet, (uint32_t)&gHuart.Instance->DR, strlen(msg));
+//}
 
-    /*
-     * Counts how many WORDS it has to write
-     */
-    uint32_t word_count = (int)data_len/WORD_SIZE;
-    word_count = !data_len%WORD_SIZE ? word_count : word_count+1;
 
-    for(int i=0; i<word_count; i++)
-    	HAL_FLASH_Program(FLASH_TYPEPROGRAM_WORD, address + WORD_SIZE*i, *(uint32_t *)(data + WORD_SIZE*i));
+HAL_StatusTypeDef create_packet(uint32_t type, uint32_t* address_buffer, uint32_t data_buffer, uint32_t data_len){
 
-    HAL_FLASH_Lock();
+	char *header, *packet;
+	uint32_t offset = 0;
 
-    return HAL_OK;
+	header = malloc(HEADER_SIZE);
+	get_header(header, type);
+
+	packet = malloc(HEADER_SIZE + sizeof(address_buffer) + data_len);
+	memcpy(packet, header, HEADER_SIZE);
+	offset += HEADER_SIZE;
+//	sprintf(data_buffer_str, "%x", address_buffer);
+	//	memcpy(packet + offset, data_buffer_str, sizeof(address_buffer));
+
+	memcpy(packet + offset, &address_buffer, sizeof(uint32_t));
+	offset += sizeof(uint32_t);
+	memcpy(packet + offset, (uint32_t *)data_buffer, data_len);
+	offset += data_len;
+
+	HAL_DMA_Start_IT(ghdma_usart2_tx, (uint32_t)packet, (uint32_t)&gHuart->Instance->DR, offset);
+
+	return HAL_OK;
 }
 
 
+
+
+HAL_StatusTypeDef virtual_flash_write(uint32_t* address, uint32_t data, uint32_t data_len){
+	return create_packet(WRITE_PKT, address, data, data_len);
+}
+
+
+HAL_StatusTypeDef virtual_terminal_write(uint32_t data, uint32_t data_len){
+	return create_packet(SERIAL_PKT, 0x0, data, data_len);
+}
 
 
 /*
@@ -84,6 +149,8 @@ void fs_init(UART_HandleTypeDef *huart, DMA_HandleTypeDef *hdma_usart_tx, DMA_Ha
 
 //
 
+	char *s = "helooooo";
+	virtual_flash_write((uint32_t *)0x00012345, (uint32_t)s, strlen(s)+1);
 
 }
 
