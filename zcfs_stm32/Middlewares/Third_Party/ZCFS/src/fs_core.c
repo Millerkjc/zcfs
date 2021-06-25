@@ -81,40 +81,38 @@ void RetargetInit(UART_HandleTypeDef *huart, DMA_HandleTypeDef *hdma_usart_tx, D
 //}
 
 
-HAL_StatusTypeDef create_packet(uint32_t type, uint32_t* address_buffer, uint32_t data_buffer, uint32_t data_len){
-
-	char *header, *packet;
-	uint32_t offset = 0;
+uint32_t create_packet(char* pkt, uint32_t type, uint32_t* address_buffer, uint32_t data_buffer, uint32_t data_len){
+	char *header;
+	uint32_t size_pkt = 0;
 
 	header = malloc(HEADER_SIZE);
 	get_header(header, type);
 
-	packet = malloc(HEADER_SIZE + sizeof(address_buffer) + data_len);
-	memcpy(packet, header, HEADER_SIZE);
-	offset += HEADER_SIZE;
-//	sprintf(data_buffer_str, "%x", address_buffer);
-	//	memcpy(packet + offset, data_buffer_str, sizeof(address_buffer));
+	memcpy(pkt, header, HEADER_SIZE);
+	size_pkt += HEADER_SIZE;
+	memcpy(pkt + size_pkt, &address_buffer, sizeof(uint32_t));
+	size_pkt += sizeof(uint32_t);
+	memcpy(pkt + size_pkt, (uint32_t *)data_buffer, data_len);
+	size_pkt += data_len;
 
-	memcpy(packet + offset, &address_buffer, sizeof(uint32_t));
-	offset += sizeof(uint32_t);
-	memcpy(packet + offset, (uint32_t *)data_buffer, data_len);
-	offset += data_len;
-
-	HAL_DMA_Start_IT(ghdma_usart2_tx, (uint32_t)packet, (uint32_t)&gHuart->Instance->DR, offset);
-
-	return HAL_OK;
+	return size_pkt;
 }
 
 
 
 
 HAL_StatusTypeDef virtual_flash_write(uint32_t* address, uint32_t data, uint32_t data_len){
-	return create_packet(WRITE_PKT, address, data, data_len);
+	char *pkt = malloc(HEADER_SIZE + sizeof(address) + data_len);
+	uint32_t size_pkt = create_packet(pkt, WRITE_PKT, address, data, data_len);
+	HAL_DMA_Start_IT(ghdma_usart2_tx, (uint32_t)pkt, (uint32_t)&gHuart->Instance->DR, size_pkt);
+
+	return HAL_OK;
 }
 
 
 HAL_StatusTypeDef virtual_terminal_write(uint32_t data, uint32_t data_len){
-	return create_packet(SERIAL_PKT, 0x0, data, data_len);
+//	return create_packet(SERIAL_PKT, 0x0, data, data_len);
+	return HAL_OK;
 }
 
 
