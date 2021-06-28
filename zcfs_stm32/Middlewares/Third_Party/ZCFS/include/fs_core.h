@@ -16,17 +16,18 @@
 #define INCLUDE_FS_CORE_H_
 
 //#define write _write
-#define HEADER_SIZE 11
+#define HEADER_SIZE 9
 #define SERIAL_PKT 0
-#define SERIAL_PKT_HEADER "zcfs_serial"
+#define SERIAL_PKT_HEADER "zcfs_ser_"
 #define WRITE_PKT 1
-#define WRITE_PKT_HEADER "zcfs_write_"
+#define WRITE_PKT_HEADER "zcfs_wrt_"
 #define READ_PKT 2
-#define READ_PKT_HEADER "zcfs_read_"
-#define ERROR_PKT_HEADER "zcfs_error"
+#define READ_PKT_HEADER "zcfs_rdx_"
+#define ERROR_PKT_HEADER "zcfs_err_"
 
 #define CHUNK_DELIMITER "@"
 #define DATA_DELIMITER "#"
+#define EOL_PKT "_end"
 //#define DELIMITER_SIZE 4
 
 
@@ -48,7 +49,12 @@ DMA_HandleTypeDef *ghdma_usart2_rx;
  * Superblock
  */
 /* Singleton Superblock */
-ifile_t* superblock_t[_INODE_LIST_LIMIT];
+typedef struct __attribute__((__packed__)) block{
+	uint32_t data_address;
+	uint32_t inode_address;
+	ifile_t* inode_list[_INODE_LIST_LIMIT];
+}superblock_t;
+superblock_t superblock;
 
 
 #endif /* INCLUDE_FS_CORE_H_ */

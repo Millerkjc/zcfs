@@ -13,11 +13,12 @@
 uint32_t write_ptr = _VZCFS_DISK_START;
 #define WORD_SIZE 4
 uint32_t superblock_pointer_t = SUPERBLOCK_ADDRESS((sizeof(superblock_t)/sizeof(ifile_t*)));
+uint32_t address_to_write = _VZCFS_DISK_START;
+
 
 /*
  * Private methods
  */
-
 
 void get_header(char *header, uint32_t type){
 
@@ -82,11 +83,14 @@ void RetargetInit(UART_HandleTypeDef *huart, DMA_HandleTypeDef *hdma_usart_tx, D
 
 
 uint32_t create_packet(char* pkt, uint32_t type, uint32_t* address_buffer, uint32_t data_buffer, uint32_t data_len){
-	char *header;
+	char *header, *eol;
 	uint32_t size_pkt = 0;
 
 	header = malloc(HEADER_SIZE);
 	get_header(header, type);
+
+	eol = malloc(1);
+	strcpy(eol, EOL_PKT);
 
 	memcpy(pkt, header, HEADER_SIZE);
 	size_pkt += HEADER_SIZE;
@@ -94,6 +98,8 @@ uint32_t create_packet(char* pkt, uint32_t type, uint32_t* address_buffer, uint3
 	size_pkt += sizeof(uint32_t);
 	memcpy(pkt + size_pkt, (uint32_t *)data_buffer, data_len);
 	size_pkt += data_len;
+	memcpy(pkt + size_pkt, eol, strlen(EOL_PKT));
+	size_pkt += strlen(EOL_PKT);
 
 	return size_pkt;
 }
@@ -105,6 +111,12 @@ HAL_StatusTypeDef virtual_flash_write(uint32_t* address, uint32_t data, uint32_t
 	char *pkt = malloc(HEADER_SIZE + sizeof(address) + data_len);
 	uint32_t size_pkt = create_packet(pkt, WRITE_PKT, address, data, data_len);
 	HAL_DMA_Start_IT(ghdma_usart2_tx, (uint32_t)pkt, (uint32_t)&gHuart->Instance->DR, size_pkt);
+
+	address_to_write += data_len;
+	superblock.data_address = address_to_write;
+
+	// This must be here! USART writes too fast
+	HAL_Delay(25);
 
 	return HAL_OK;
 }
@@ -146,10 +158,20 @@ void fs_init(UART_HandleTypeDef *huart, DMA_HandleTypeDef *hdma_usart_tx, DMA_Ha
 //	flash_write(superblock_pointer_t, (uint32_t)superblock_t[0], sizeof(ifile_t));
 
 //
+	superblock.data_address = _VZCFS_DISK_START;
+	superblock.inode_address = superblock_pointer_t;
+
+
+	// Only for tests
+	superblock.data_address = 0x00000101;
+	address_to_write = 0x00000101;
 
 	char *s = "helooooo";
-	virtual_flash_write((uint32_t *)0x00012345, (uint32_t)s, strlen(s)+1);
+//	virtual_flash_write((uint32_t *)0x00012345, (uint32_t)s, strlen(s)+1);
+//	virtual_flash_write((uint32_t *)0x00000101, (uint32_t)s, strlen(s)+1);
 
+	virtual_flash_write((uint32_t *)address_to_write, (uint32_t)s, strlen(s)+1);
+	virtual_flash_write((uint32_t *)address_to_write, (uint32_t)s, strlen(s)+1);
 }
 
 
