@@ -30,12 +30,21 @@ typedef struct __attribute__((__packed__)) inode_file{
 	uint32_t id;			/* file identifier 		 */
 	char name[16]; 		 	/* 15 + '\0' 			 */
 
-	char* data_ptr;			/* ptr to the file data  */
+//	char* data_ptr;			/* ptr to the file data  */
 	uint32_t time;			/* time of the last edit */
 	uint32_t size;			/* size of the file 	 */
 
 	idfile_t* next_dinode;    /* next inode	         */
 } ifile_t;
 
+
+
+
+
+/*
+ * open(f1) -> Create INODE(pending list) -> point to INODE data(NULL) -> WRITE INODE
+ * write(1) -> Create&Write INODE data -> Update INODE pointer to next data
+ *
+ */
 
 #endif /* INCLUDE_FS_INODE_H_ */

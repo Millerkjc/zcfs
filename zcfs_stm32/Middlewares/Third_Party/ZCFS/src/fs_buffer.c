@@ -147,4 +147,9 @@ HAL_StatusTypeDef buffer_insert(main_buffer_t* mbuf, uint32_t id, char *data, ui
 	return HAL_OK;
 }
 
+HAL_StatusTypeDef pending_inode_insert(uint32_t fd){
+	return HAL_OK;
+}
+
+
 
