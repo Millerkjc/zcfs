@@ -14,16 +14,18 @@ eol_size = len(eol_pkt)
 # disk variables
 disk_size = 1024  # 5 MB
 #disk_size = 1024 * 1024 * 5 # 5 MB
-disk = [b'0x0'] * disk_size
+disk = [b'\x00'] * disk_size
 
 def write_to_disk(address, data):
     for (pos,d) in enumerate(data):
-        disk[address + pos] = d
+        disk[address + pos] = bytes([d])
 
 # TODO
-def print_disk():
-    for x in range(0, disk_size, 4):
-        print('{} {} {} {} {}'.format(hex(x), disk[x], disk[x+1], disk[x+2], disk[x+3]))
+def print_disk(p_disk_size=4):
+    for address in range(0, disk_size, p_disk_size):
+        #print(('{} ' + ' {}'*4).format(hex(x), disk[x], disk[x+1], disk[x+2], disk[x+3]))
+        #print(('0x{:03x}: ' + ' {:02x}'*p_disk_size).format(x, ord(disk[x]), ord(disk[x+1]), ord(disk[x+2]), ord(disk[x+3])))
+        print(('0x{:03x}: ' + ' {:02x}'*p_disk_size).format(address, *[ord(disk[idx]) for idx in range(address, address+p_disk_size)]))
 
 parser = argparse.ArgumentParser()
 parser.add_argument('tty_port', help='tty of the connected STM32 board')
