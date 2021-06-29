@@ -28,8 +28,8 @@
 #define CHUNK_DELIMITER "@"
 #define DATA_DELIMITER "#"
 #define EOL_PKT "_end"
-//#define DELIMITER_SIZE 4
 
+uint32_t next_fd;
 
 // Functions
 void fs_init(UART_HandleTypeDef *huart, DMA_HandleTypeDef *hdma_usart_tx, DMA_HandleTypeDef *hdma_usart_rx);
@@ -41,6 +41,7 @@ HAL_StatusTypeDef fs_write(uint32_t fd, char* ptr, uint32_t len);
 // Variables
 UART_HandleTypeDef *gHuart;
 main_buffer_t* mbuf;
+pending_buffer_t* pbuffi;
 DMA_HandleTypeDef *ghdma_usart2_tx;
 DMA_HandleTypeDef *ghdma_usart2_rx;
 
@@ -50,8 +51,8 @@ DMA_HandleTypeDef *ghdma_usart2_rx;
  */
 /* Singleton Superblock */
 typedef struct __attribute__((__packed__)) block{
-	uint32_t data_address;
-	uint32_t inode_address;
+	uint32_t ptr_data_address;  // last written address for data
+	uint32_t ptr_inode_address; // last written address for inode
 	ifile_t* inode_list[_INODE_LIST_LIMIT];
 }superblock_t;
 superblock_t superblock;
