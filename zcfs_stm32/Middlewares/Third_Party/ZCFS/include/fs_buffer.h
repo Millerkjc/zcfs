@@ -31,12 +31,12 @@ typedef struct __attribute__((__packed__)) buffer{
 
 
 /*
- * INODE STRUCT LISTS
+ * INODE STRUCT LISTS (open files)
  */
 // TODO change from list to another struct (es. tree, ...)
 typedef struct __attribute__((__packed__)) inode_buffer{
-	ifile_t* list_new_inode;
-	idfile_t* last_inode_data;
+	linked_list_t* list_new_inode;
+	linked_list_t* last_inode_data;
 } pending_buffer_t;
 
 
@@ -51,7 +51,8 @@ file_buffer_t* fbuffer_init(file_buffer_t* fbuf, uint32_t id);
 HAL_StatusTypeDef fbuffer_insert(file_buffer_t* fbuf, char *data, uint32_t len);
 void fbuffer_flush();
 // pending inode buffer
-HAL_StatusTypeDef pending_inode_insert(uint32_t fd);
+pending_buffer_t* pending_buffer_init();
+HAL_StatusTypeDef pending_inode_insert(ifile_t* list_new_inode, idfile_t* last_inode_data);
 
 
 

@@ -147,7 +147,19 @@ HAL_StatusTypeDef buffer_insert(main_buffer_t* mbuf, uint32_t id, char *data, ui
 	return HAL_OK;
 }
 
-HAL_StatusTypeDef pending_inode_insert(uint32_t fd){
+
+pending_buffer_t* pending_buffer_init(){
+	pending_buffer_t* pbuffi = (pending_buffer_t *)malloc(sizeof(pending_buffer_t));
+	pbuffi->last_inode_data = (linked_list_t *)malloc(sizeof(linked_list_t));
+	pbuffi->list_new_inode = (linked_list_t *)malloc(sizeof(linked_list_t));
+	linked_list_init(pbuffi->last_inode_data);
+	linked_list_init(pbuffi->list_new_inode);
+
+	return pbuffi;
+}
+
+HAL_StatusTypeDef pending_inode_insert(ifile_t* list_new_inode, idfile_t* last_inode_data){
+
 	return HAL_OK;
 }
 
