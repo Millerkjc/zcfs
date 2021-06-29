@@ -18,12 +18,19 @@ void linked_list_init(linked_list_t *list){
 }
 
 void linked_list_append(linked_list_t *list, void *item){
-
 	list_item_t *new_item = (list_item_t *)malloc(sizeof(list_item_t));
-	list->tail->next = new_item;
 
-	new_item->next = NULL;
-	new_item->data = item;
+	if(list->tail == NULL){
+		list->head = new_item;
+		list->tail = new_item;
+	}else{
+		list->tail->next = new_item;
+		list->tail = list->tail->next;
+	}
+
+	list->tail->next = NULL;
+	list->tail->data = item;
+
 }
 
 void *linked_list_get(linked_list_t *list, int idx){

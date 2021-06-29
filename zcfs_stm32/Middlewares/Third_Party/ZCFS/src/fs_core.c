@@ -113,7 +113,7 @@ HAL_StatusTypeDef virtual_flash_write(uint32_t* address, uint32_t data, uint32_t
 	HAL_DMA_Start_IT(ghdma_usart2_tx, (uint32_t)pkt, (uint32_t)&gHuart->Instance->DR, size_pkt);
 
 	address_to_write += data_len;
-	superblock.data_address = address_to_write;
+	superblock.ptr_data_address = address_to_write;
 
 	// This must be here! USART writes too fast
 	HAL_Delay(25);
@@ -136,6 +136,24 @@ void fs_init(UART_HandleTypeDef *huart, DMA_HandleTypeDef *hdma_usart_tx, DMA_Ha
 
 	RetargetInit(huart, hdma_usart_tx, hdma_usart_rx);
 	mbuf = buffer_init(mbuf);
+	pbuffi = pending_buffer_init();
+
+	int x = 3;
+	int y = 4;
+	int z = 5;
+	linked_list_append(pbuffi->last_inode_data, &x);
+	linked_list_append(pbuffi->last_inode_data, &y);
+	linked_list_append(pbuffi->last_inode_data, &z);
+
+	/*
+	 * 0 - Input
+	 * 1 - Output
+	 */
+	next_fd = 2;
+
+	for(int p=0; p<_INODE_LIST_LIMIT; p++){
+		superblock.inode_list[p] = NULL;
+	}
 	// TODO write superblock in FLASH
 //	flash_write(, )
 
@@ -158,12 +176,12 @@ void fs_init(UART_HandleTypeDef *huart, DMA_HandleTypeDef *hdma_usart_tx, DMA_Ha
 //	flash_write(superblock_pointer_t, (uint32_t)superblock_t[0], sizeof(ifile_t));
 
 //
-	superblock.data_address = _VZCFS_DISK_START;
-	superblock.inode_address = superblock_pointer_t;
+	superblock.ptr_data_address = _VZCFS_DISK_START;
+	superblock.ptr_inode_address = superblock_pointer_t;
 
 
 	// Only for tests
-	superblock.data_address = 0x00000101;
+	superblock.ptr_data_address = 0x00000101;
 	address_to_write = 0x00000101;
 
 	char *s = "helooooo";

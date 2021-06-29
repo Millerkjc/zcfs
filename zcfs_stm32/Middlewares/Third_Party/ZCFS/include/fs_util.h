@@ -46,7 +46,7 @@
 
  typedef struct list_item {
      void *data;
-     struct list_item *next;
+     void *next;
  } list_item_t;
 
  typedef struct linked_list {
