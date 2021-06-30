@@ -6,7 +6,8 @@
  */
 
 #include "fs_util.h"
-
+#include <stdio.h>
+#include <string.h>
 
 /*
  * TODO: Linked list code
@@ -28,8 +29,8 @@ void linked_list_append(linked_list_t *list, void *item){
 		list->tail = list->tail->next;
 	}
 
-	list->tail->next = NULL;
-	list->tail->data = item;
+	new_item->next = NULL;
+	new_item->data = item;
 
 }
 
@@ -96,6 +97,19 @@ void linked_list_clear(linked_list_t *list){
 
 
 
+void linked_list_print(linked_list_t *list){
+	list_item_t *new_item = list->head;
+	char all[50];
+	memset(all, 0, 50);
+
+	while(new_item != NULL){
+		char s[10];
+		memset(s, 0, 10);
+		sprintf(s, "%ld", *(uint32_t *)new_item->data);
+		strcat(all, s);
+		new_item = new_item->next;
+	}
+}
 
 
 

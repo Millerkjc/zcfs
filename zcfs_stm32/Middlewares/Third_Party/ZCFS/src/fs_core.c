@@ -138,12 +138,20 @@ void fs_init(UART_HandleTypeDef *huart, DMA_HandleTypeDef *hdma_usart_tx, DMA_Ha
 	mbuf = buffer_init(mbuf);
 	pbuffi = pending_buffer_init();
 
+	/*
+	 * Config pkts
+	 * - size of the disk
+	 * - superblock pointer
+	 */
+
 	int x = 3;
 	int y = 4;
 	int z = 5;
 	linked_list_append(pbuffi->last_inode_data, &x);
 	linked_list_append(pbuffi->last_inode_data, &y);
 	linked_list_append(pbuffi->last_inode_data, &z);
+
+//	linked_list_print(pbuffi->last_inode_data);
 
 	/*
 	 * 0 - Input
