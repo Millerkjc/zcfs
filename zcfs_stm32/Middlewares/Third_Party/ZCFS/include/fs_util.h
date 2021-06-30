@@ -12,36 +12,15 @@
 #ifndef THIRD_PARTY_ZCFS_INCLUDE_FS_UTIL_H_
 #define THIRD_PARTY_ZCFS_INCLUDE_FS_UTIL_H_
 
-
- /*
-  * Memory location and limits
-  *
-  * External Device [0xA0000000 - 0xDFFFFFFF]
-  * External RAM	   [0x9FFFFFFF - 0x60000000]
-  */
-
- /*
-  * Memory location and limits
-  *
-  * Virtual Flash [0x00000000 - 0x00080000]
-  */
-
-#define _UP_MEMORY_LIMIT   ((uint32_t)0x00080000)
-#define _DOWN_MEMORY_LIMIT ((uint32_t)0x00000000)
-
-
-#define SUPERBLOCK_ADDRESS(superblock_size) (_UP_MEMORY_LIMIT - superblock_size)
-
 /*
  * Struct size
  */
-#define _INODE_LIST_LIMIT ((uint16_t)1024)
+#define _INODE_LIST_LIMIT ((uint32_t)1024)
 
 // 4/16/32 Kbyte - To be parameterized
 #define _BUFFER_SIZE_4K  ((uint16_t)0x1000) //  4094 - 4K
 #define _BUFFER_SIZE_16K ((uint16_t)0x4000) // 16384 - 16K
 #define _BUFFER_SIZE_32K ((uint16_t)0x8000) // 32768 - 32K
-
 
 
 typedef struct list_item {

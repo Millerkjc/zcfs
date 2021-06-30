@@ -9,10 +9,11 @@
 #include "stm32f407xx.h"
 
 #define _VZCFS_DISK_START (uint32_t)0x0
-#define _VZCFS_DISK_SIZE 524288 // 5 MB
+#define _VZCFS_DISK_SIZE 5242880 // 5 MB
 uint32_t write_ptr = _VZCFS_DISK_START;
 #define WORD_SIZE 4
-uint32_t superblock_pointer_t = SUPERBLOCK_ADDRESS((sizeof(superblock_t)/sizeof(ifile_t*)));
+
+uint32_t superblock_pointer_t = _VZCFS_DISK_SIZE  - sizeof(superblock_t);
 uint32_t address_to_write = _VZCFS_DISK_START;
 
 
@@ -144,12 +145,12 @@ void fs_init(UART_HandleTypeDef *huart, DMA_HandleTypeDef *hdma_usart_tx, DMA_Ha
 	 * - superblock pointer
 	 */
 
-	int x = 3;
-	int y = 4;
-	int z = 5;
-	linked_list_append(pbuffi->last_inode_data, &x);
-	linked_list_append(pbuffi->last_inode_data, &y);
-	linked_list_append(pbuffi->last_inode_data, &z);
+//	int x = 3;
+//	int y = 4;
+//	int z = 5;
+//	linked_list_append(pbuffi->last_inode_data, &x);
+//	linked_list_append(pbuffi->last_inode_data, &y);
+//	linked_list_append(pbuffi->last_inode_data, &z);
 
 //	linked_list_print(pbuffi->last_inode_data);
 
@@ -162,42 +163,25 @@ void fs_init(UART_HandleTypeDef *huart, DMA_HandleTypeDef *hdma_usart_tx, DMA_Ha
 	for(int p=0; p<_INODE_LIST_LIMIT; p++){
 		superblock.inode_list[p] = NULL;
 	}
-	// TODO write superblock in FLASH
-//	flash_write(, )
 
-//	superblock_t[0] = malloc(sizeof(ifile_t));
-//	superblock_t[0]->data_ptr = NULL;
-//	superblock_t[0]->id = 123;
-//	strcpy(superblock_t[0]->name,"hello");
-//	superblock_t[0]->next_dinode = NULL;
-//	superblock_t[0]->size = 345;
-//	superblock_t[0]->time = 456;
-//
-//	superblock_t[1] = malloc(sizeof(ifile_t));
-//	superblock_t[1]->data_ptr = NULL;
-//	superblock_t[1]->id = 321;
-//	strcpy(superblock_t[1]->name, "hello2");
-//	superblock_t[1]->next_dinode = NULL;
-//	superblock_t[1]->size = 543;
-//	superblock_t[1]->time = 654;
-//
-//	flash_write(superblock_pointer_t, (uint32_t)superblock_t[0], sizeof(ifile_t));
-
-//
 	superblock.ptr_data_address = _VZCFS_DISK_START;
 	superblock.ptr_inode_address = superblock_pointer_t;
 
+	// TODO write superblock in FLASH
+
+
 
 	// Only for tests
-	superblock.ptr_data_address = 0x00000101;
+	//superblock.ptr_data_address = 0x00000101;
 	address_to_write = 0x00000101;
 
-	char *s = "helooooo";
+//	char *s = "helooooo";
 //	virtual_flash_write((uint32_t *)0x00012345, (uint32_t)s, strlen(s)+1);
 //	virtual_flash_write((uint32_t *)0x00000101, (uint32_t)s, strlen(s)+1);
 
-	virtual_flash_write((uint32_t *)address_to_write, (uint32_t)s, strlen(s)+1);
-	virtual_flash_write((uint32_t *)address_to_write, (uint32_t)s, strlen(s)+1);
+	// disk size 1024
+//	virtual_flash_write((uint32_t *)address_to_write, (uint32_t)s, strlen(s)+1);
+//	virtual_flash_write((uint32_t *)address_to_write, (uint32_t)&superblock, sizeof(superblock_t));
 }
 
 
