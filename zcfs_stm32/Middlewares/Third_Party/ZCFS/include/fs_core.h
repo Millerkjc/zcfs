@@ -33,7 +33,7 @@ uint32_t next_fd;
 
 // Functions
 void fs_init(UART_HandleTypeDef *huart, DMA_HandleTypeDef *hdma_usart_tx, DMA_HandleTypeDef *hdma_usart_rx);
-uint32_t fs_open(uint32_t fd, int flags, ...);
+uint32_t fs_open(char* file_name);
 HAL_StatusTypeDef fs_write(uint32_t fd, char* ptr, uint32_t len);
 //HAL_StatusTypeDef fs_read(int fd, char* ptr, int len);
 
@@ -53,7 +53,7 @@ DMA_HandleTypeDef *ghdma_usart2_rx;
 typedef struct __attribute__((__packed__)) block{
 	uint32_t ptr_data_address;  // last written address for data
 	uint32_t ptr_inode_address; // last written address for inode
-	ifile_t* inode_list[_INODE_LIST_LIMIT];
+	ifile_t inode_list[_INODE_LIST_LIMIT];
 }superblock_t;
 superblock_t superblock;
 

@@ -7,6 +7,8 @@
 
 #include "fs_core.h"
 #include "stm32f407xx.h"
+#include "fs_syscalls.h"
+
 
 #define _VZCFS_DISK_START (uint32_t)0x0
 #define _VZCFS_DISK_SIZE 5242880 // 5 MB
@@ -160,9 +162,7 @@ void fs_init(UART_HandleTypeDef *huart, DMA_HandleTypeDef *hdma_usart_tx, DMA_Ha
 	 */
 	next_fd = 2;
 
-	for(int p=0; p<_INODE_LIST_LIMIT; p++){
-		superblock.inode_list[p] = NULL;
-	}
+	memset(superblock.inode_list, 0, sizeof(ifile_t)*_INODE_LIST_LIMIT);
 
 	superblock.ptr_data_address = _VZCFS_DISK_START;
 	superblock.ptr_inode_address = superblock_pointer_t;
@@ -181,15 +181,18 @@ void fs_init(UART_HandleTypeDef *huart, DMA_HandleTypeDef *hdma_usart_tx, DMA_Ha
 
 	// disk size 1024
 //	virtual_flash_write((uint32_t *)address_to_write, (uint32_t)s, strlen(s)+1);
-//	virtual_flash_write((uint32_t *)address_to_write, (uint32_t)&superblock, sizeof(superblock_t));
+	virtual_flash_write((uint32_t *)superblock_pointer_t, (uint32_t)&superblock, sizeof(superblock_t));
 }
 
 
 
-uint32_t fs_open(uint32_t fd, int flags, ...){
+uint32_t fs_open(char* file_name){
+
+	// TODO CALL _OPEN/OPEN
+	uint32_t fd = _open(file_name);
 
 	// TODO allocate buffer, create superblock entry, inode, etc.
-	return -1;
+	return fd;
 }
 
 
