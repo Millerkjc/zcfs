@@ -159,11 +159,13 @@ pending_buffer_t* pending_buffer_init(){
 	return pbuffi;
 }
 
-HAL_StatusTypeDef pending_dinode_insert(ifile_t* list_new_inode, idfile_t* last_inode_data){
+HAL_StatusTypeDef pending_dinode_insert(ifile_t* list_new_inode, uint32_t* last_inode_data){
 	/*
 	 * se c'è fd e last_dinode NULL -> aggiungere next_dinode all'ifile (INODE)
 	 */
 
+	linked_list_append(pbuffi->list_new_fd, &list_new_inode->id);
+	linked_list_append(pbuffi->last_dinode, &last_inode_data);
 
 	return HAL_OK;
 }

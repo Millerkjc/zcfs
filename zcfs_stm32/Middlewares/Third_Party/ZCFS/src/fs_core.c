@@ -28,10 +28,12 @@ uint32_t get_inode_addr_to_wrt(uint32_t);
 uint32_t get_dinode_addr_to_wrt();
 
 void get_header(char *, uint32_t);
+HAL_StatusTypeDef virtual_flash_write(uint32_t* address, uint32_t data, uint32_t data_len);
 uint32_t create_packet(char*, uint32_t, uint32_t*, uint32_t, uint32_t);
 HAL_StatusTypeDef inode_write(uint32_t id, char* name, uint32_t time, uint32_t size, uint8_t is_open, idfile_t* next_dinode);
 HAL_StatusTypeDef dinode_write(uint32_t fd, char* data, uint32_t data_len);
 HAL_StatusTypeDef data_write(char* data, uint32_t data_len);
+void update_superblock_metadata();
 
 
 /*
@@ -43,6 +45,11 @@ HAL_StatusTypeDef data_write(char* data, uint32_t data_len);
  * - Inode
  * - DInode
  */
+
+void update_superblock_metadata(){
+		virtual_flash_write((uint32_t *)superblock_pointer_t, (uint32_t)&superblock, sizeof(uint32_t)*3);
+}
+
 uint32_t get_inode_addr_to_wrt(uint32_t fd){
 	return superblock_pointer_t + sizeof(uint32_t)*2 + fd*sizeof(ifile_t);
 }
@@ -160,10 +167,10 @@ HAL_StatusTypeDef inode_write(uint32_t id, char* name, uint32_t time, uint32_t s
 	virtual_flash_write((uint32_t*)get_inode_addr_to_wrt(id), (uint32_t)&superblock.inode_list[id], sizeof(ifile_t));
 
 	superblock.next_fd += 1;
-	virtual_flash_write((uint32_t *)superblock_pointer_t, (uint32_t)&superblock, sizeof(uint32_t)*3);
+	update_superblock_metadata();
 
 	if(id >= 2){
-
+		pending_dinode_insert(superblock.inode_list[id], NULL);
 	}
 
 	return HAL_OK;
@@ -189,13 +196,23 @@ HAL_StatusTypeDef dinode_write(uint32_t fd, char* data, uint32_t data_len){
 		uint32_t* dinode_addr = (uint32_t *)(superblock.ptr_dinode_address - sizeof(idfile_t));
 		virtual_flash_write(dinode_addr, (uint32_t)dinode_file, sizeof(idfile_t));
 
-		// TODO insert address to past dinode - superblock.ptr_dinode_address
-		// TODO TODO TODO
-//		idfile_t old_idfile = virtual_flash_read((uint32_t *)old_dinode_addr, (uint32_t)?????????, sizeof(idfile_t));
-//		old_idfile.next_dinode = dinode_addr;
-//		virtual_flash_write((uint32_t *)old_dinode_addr, (uint32_t)old_idfile, sizeof(idfile_t));
+		if (old_dinode_addr == NULL){
+			/*
+			 * First dinode! -> write address direct to inode
+			 */
+			superblock.inode_list[fd].next_dinode = (idfile_t *)dinode_addr;
 
-		superblock.ptr_dinode_address += sizeof(idfile_t);
+		}else{
+
+			// TODO insert address to past dinode - superblock.ptr_dinode_address
+			// TODO TODO TODO
+	//		idfile_t old_idfile = virtual_flash_read((uint32_t *)old_dinode_addr, (uint32_t)?????????, sizeof(idfile_t));
+	//		old_idfile.next_dinode = dinode_addr;
+	//		virtual_flash_write((uint32_t *)old_dinode_addr, (uint32_t)old_idfile, sizeof(idfile_t));
+		}
+
+		superblock.ptr_dinode_address -= sizeof(idfile_t);
+		update_superblock_metadata();
 	}
 
 	return HAL_OK;
@@ -203,9 +220,10 @@ HAL_StatusTypeDef dinode_write(uint32_t fd, char* data, uint32_t data_len){
 
 HAL_StatusTypeDef data_write(char* data, uint32_t data_len){
 
-	virtual_flash_write((uint32_t *)superblock.ptr_data_address, (uint32_t)&data, data_len);
+	virtual_flash_write((uint32_t *)superblock.ptr_data_address, (uint32_t)data, data_len);
 
 	superblock.ptr_data_address += data_len;
+	update_superblock_metadata();
 
 	return HAL_OK;
 }
@@ -227,6 +245,18 @@ void initialize_superblock(){
 	inode_write(STDIN, "STDIN", 0, 0, 1, NULL);
 	inode_write(STDOUT, "STDOUT", 0, 0, 1, NULL);
 
+	uint32_t fd_test = superblock.next_fd;
+	inode_write(fd_test, "wrt0", 42, 41, 1, NULL);
+
+	uint32_t fd_test_2 = superblock.next_fd;
+	inode_write(fd_test_2, "test0", 42, 41, 1, NULL);
+
+	char *s = "AAAAAAABBBBB";
+	char *s2 = "hello world";
+
+
+	dinode_write(fd_test, s, strlen(s)+1);
+	dinode_write(fd_test_2, s2, strlen(s2)+1);
 
 
 //	virtual_flash_write((uint32_t *)superblock_pointer_t, (uint32_t)&superblock, sizeof(superblock_t), 50);
