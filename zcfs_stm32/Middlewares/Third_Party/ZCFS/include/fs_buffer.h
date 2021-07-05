@@ -35,8 +35,8 @@ typedef struct __attribute__((__packed__)) buffer{
  */
 // TODO change from list to another struct (es. tree, ...)
 typedef struct __attribute__((__packed__)) inode_buffer{
-	linked_list_t* list_new_inode;
-	linked_list_t* last_inode_data;
+	linked_list_t* list_new_fd; 		// list fd - file aperti
+	linked_list_t* last_dinode;			// last dinode address on disk di uno specifico fd
 } pending_buffer_t;
 
 
@@ -53,6 +53,12 @@ void fbuffer_flush();
 // pending inode buffer
 pending_buffer_t* pending_buffer_init();
 HAL_StatusTypeDef pending_inode_insert(ifile_t* list_new_inode, idfile_t* last_inode_data);
+
+
+// To find the fd of the open file
+int linked_list_find_fd(linked_list_t *list, int fd);
+uint32_t pending_fd_find(uint32_t fd);
+uint32_t* pending_dinode_get(uint32_t idx);
 
 
 
