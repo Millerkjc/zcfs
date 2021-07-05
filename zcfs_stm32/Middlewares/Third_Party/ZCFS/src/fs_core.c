@@ -19,45 +19,37 @@ uint32_t write_ptr = _VZCFS_DISK_START;
 #define STDOUT 1
 
 uint32_t superblock_pointer_t = _VZCFS_DISK_SIZE  - sizeof(superblock_t);
-uint32_t address_to_write = _VZCFS_DISK_START;
+//uint32_t address_to_write = _VZCFS_DISK_START;
+
+
+
+
+uint32_t get_inode_addr_to_wrt(uint32_t);
+uint32_t get_dinode_addr_to_wrt();
+
+void get_header(char *, uint32_t);
+uint32_t create_packet(char*, uint32_t, uint32_t*, uint32_t, uint32_t);
+HAL_StatusTypeDef inode_write(uint32_t id, char* name, uint32_t time, uint32_t size, uint8_t is_open, idfile_t* next_dinode);
+HAL_StatusTypeDef dinode_write(uint32_t fd, char* data, uint32_t data_len);
+HAL_StatusTypeDef data_write(char* data, uint32_t data_len);
 
 
 /*
  * Private methods
  */
 
-
-void set_ifile(ifile_t* ifile, uint32_t id, char* name, uint32_t time, uint32_t size, uint8_t is_open, idfile_t* next_dinode){
-	ifile->id = id;
-	strncpy(ifile->name, name, FNAME_LENGTH);
-	ifile->time = time;
-	ifile->size = size;
-	ifile->is_open = is_open;
-	ifile->next_dinode = next_dinode;
-}
-
-
 /*
- * Initialize superblock
+ * Address of the next write
+ * - Inode
+ * - DInode
  */
-void initialize_superblock(){
-	memset(superblock.inode_list, 0, sizeof(ifile_t)*_INODE_LIST_LIMIT);
-
-	/*
-	 * Write inode 0 (STDIN) and 1 (STDOUT)
-	 */
-	set_ifile(&superblock.inode_list[STDIN], STDIN, "STDIN", 0, 0, 1, NULL);
-	set_ifile(&superblock.inode_list[STDOUT], STDOUT, "STDOUT", 0, 0, 1, NULL);
-
-	superblock.ptr_data_address = _VZCFS_DISK_START;
-	superblock.ptr_inode_address = superblock_pointer_t;
+uint32_t get_inode_addr_to_wrt(uint32_t fd){
+	return superblock_pointer_t + sizeof(uint32_t)*2 + fd*sizeof(ifile_t);
 }
 
-
-//HAL_StatusTypeDef write_inode(ifile_t inode){
-//	// TODO Write on RAM
-//	// TODO Write on disk
-//}
+uint32_t get_dinode_addr_to_wrt(){
+	return superblock.ptr_dinode_address - sizeof(idfile_t);
+}
 
 
 void get_header(char *header, uint32_t type){
@@ -78,6 +70,187 @@ void get_header(char *header, uint32_t type){
 	}
 }
 
+
+/*
+ * Packet format: HEADER @ RAW_DATA(address:data) @ INODE_INFO(address:data)
+ * 		      Es: "zcfs_write_@FLASH#RAW_DATA@INODE#ADDRESS_end"
+ */
+uint32_t create_packet(char* pkt, uint32_t type, uint32_t* address_buffer, uint32_t data_buffer, uint32_t data_len){
+	char *header, *eol;
+	uint32_t size_pkt = 0;
+
+	header = malloc(HEADER_SIZE);
+	get_header(header, type);
+
+	eol = malloc(strlen(EOL_PKT));
+	strcpy(eol, EOL_PKT);
+
+	memcpy(pkt, header, HEADER_SIZE);
+	size_pkt += HEADER_SIZE;
+	memcpy(pkt + size_pkt, &address_buffer, sizeof(uint32_t));
+	size_pkt += sizeof(uint32_t);
+	memcpy(pkt + size_pkt, (uint32_t *)data_buffer, data_len);
+	size_pkt += data_len;
+	memcpy(pkt + size_pkt, eol, strlen(EOL_PKT));
+	size_pkt += strlen(EOL_PKT);
+
+	free(header);
+	free(eol);
+
+	return size_pkt;
+}
+
+
+/*
+ * PRIVATE
+ * Write data/inode on the disk
+ */
+HAL_StatusTypeDef virtual_flash_write(uint32_t* address, uint32_t data, uint32_t data_len){
+	//char *pkt = malloc(HEADER_SIZE + sizeof(address) + data_len);
+	int pkt_tmp_size = HEADER_SIZE + sizeof(address) + data_len;
+	char pkt[pkt_tmp_size];
+
+
+	memset(pkt, 0, HEADER_SIZE + sizeof(address) + data_len);
+
+	uint32_t size_pkt = create_packet(pkt, WRITE_PKT, address, data, data_len);
+
+	while(HAL_UART_Transmit_DMA(gHuart, (uint8_t*)pkt, size_pkt) != HAL_OK){};
+
+
+//	 TODO in write data
+//	superblock.ptr_data_address += address_to_write;
+
+	/*
+	 *
+	 * RACE CONDITION pkt[pkt_tmp_size] su USART troppo lenta rispetto al trigger della funzione
+	 * No HAL_Delay a causa di HAL_UART_Transmit_DMA
+	 *
+	 */
+
+	// This must be here! USART writes too fast // 500000/100000!!!
+//	for(int i=0; i<500000; i++);
+	for(int i=0; i<100000; i++);
+//	HAL_Delay(50);
+
+	return HAL_OK;
+}
+
+
+
+/*
+ * INODE
+ */
+
+void set_ifile(ifile_t* ifile, uint32_t id, char* name, uint32_t time, uint32_t size, uint8_t is_open, idfile_t* next_dinode){
+	ifile->id = id;
+	strncpy(ifile->name, name, FNAME_LENGTH);
+	ifile->time = time;
+	ifile->size = size;
+	ifile->is_open = is_open;
+	ifile->next_dinode = next_dinode;
+}
+
+
+HAL_StatusTypeDef inode_write(uint32_t id, char* name, uint32_t time, uint32_t size, uint8_t is_open, idfile_t* next_dinode){
+	// Write on RAM
+	set_ifile(&superblock.inode_list[id], id, name, time, size, is_open, next_dinode);
+
+	// Write on disk
+	virtual_flash_write((uint32_t*)get_inode_addr_to_wrt(id), (uint32_t)&superblock.inode_list[id], sizeof(ifile_t));
+
+	superblock.next_fd += 1;
+	virtual_flash_write((uint32_t *)superblock_pointer_t, (uint32_t)&superblock, sizeof(uint32_t)*3);
+
+	if(id >= 2){
+
+	}
+
+	return HAL_OK;
+}
+
+
+
+HAL_StatusTypeDef dinode_write(uint32_t fd, char* data, uint32_t data_len){
+
+//	uint32_t* old_dinode_addr = pending_inode_get(fd);
+
+	uint32_t idx_fd_file = pending_fd_find(fd);
+
+	if(idx_fd_file != -1){
+		uint32_t* old_dinode_addr = pending_dinode_get(idx_fd_file);
+
+		idfile_t* dinode_file = malloc(sizeof(idfile_t));
+		dinode_file->data_ptr = (char *)superblock.ptr_data_address;
+		dinode_file->next_dinode = NULL;
+
+		data_write(data, data_len);
+
+		uint32_t* dinode_addr = (uint32_t *)(superblock.ptr_dinode_address - sizeof(idfile_t));
+		virtual_flash_write(dinode_addr, (uint32_t)dinode_file, sizeof(idfile_t));
+
+		// TODO insert address to past dinode - superblock.ptr_dinode_address
+		// TODO TODO TODO
+//		idfile_t old_idfile = virtual_flash_read((uint32_t *)old_dinode_addr, (uint32_t)?????????, sizeof(idfile_t));
+//		old_idfile.next_dinode = dinode_addr;
+//		virtual_flash_write((uint32_t *)old_dinode_addr, (uint32_t)old_idfile, sizeof(idfile_t));
+
+		superblock.ptr_dinode_address += sizeof(idfile_t);
+	}
+
+	return HAL_OK;
+}
+
+HAL_StatusTypeDef data_write(char* data, uint32_t data_len){
+
+	virtual_flash_write((uint32_t *)superblock.ptr_data_address, (uint32_t)&data, data_len);
+
+	superblock.ptr_data_address += data_len;
+
+	return HAL_OK;
+}
+
+
+
+/*
+ * Initialize superblock
+ */
+void initialize_superblock(){
+	memset(superblock.inode_list, 0, sizeof(ifile_t)*_INODE_LIST_LIMIT);
+	superblock.next_fd = 0;
+	superblock.ptr_data_address = _VZCFS_DISK_START;
+	superblock.ptr_dinode_address = superblock_pointer_t;
+
+
+	virtual_flash_write((uint32_t *)superblock_pointer_t, (uint32_t)&superblock, sizeof(uint32_t)*16);
+
+	inode_write(STDIN, "STDIN", 0, 0, 1, NULL);
+	inode_write(STDOUT, "STDOUT", 0, 0, 1, NULL);
+
+
+
+//	virtual_flash_write((uint32_t *)superblock_pointer_t, (uint32_t)&superblock, sizeof(superblock_t), 50);
+
+
+//	uint32_t address_to_write = 0x00000101;
+//	char *s = "helooooo";
+//	virtual_flash_write((uint32_t *)address_to_write, (uint32_t)s, strlen(s)+1);
+//
+//	address_to_write = 0x00000110;
+//	virtual_flash_write((uint32_t *)address_to_write, (uint32_t)s, strlen(s)+1);
+//
+
+	/*
+	 * Write inode 0 (STDIN) and 1 (STDOUT)
+	 */
+//	inode_write(STDIN, "STDIN", 0, 0, 1, NULL);
+//	inode_write(STDOUT, "STDOUT", 0, 0, 1, NULL);
+//	set_ifile(&superblock.inode_list[STDOUT], STDOUT, "STDOUT", 0, 0, 1, NULL);
+
+
+}
+
+
 void RetargetInit(UART_HandleTypeDef *huart, DMA_HandleTypeDef *hdma_usart_tx, DMA_HandleTypeDef *hdma_usart_rx){
   gHuart = huart;
   ghdma_usart2_tx = hdma_usart_tx;
@@ -91,50 +264,7 @@ void RetargetInit(UART_HandleTypeDef *huart, DMA_HandleTypeDef *hdma_usart_tx, D
   setvbuf(stdout, NULL, _IONBF, 0);
 }
 
-/*
- * Packet format: HEADER @ RAW_DATA(address:data) @ INODE_INFO(address:data)
- * 		      Es: "zcfs_write_@FLASH#RAW_DATA@INODE#ADDRESS"
- */
-uint32_t create_packet(char* pkt, uint32_t type, uint32_t* address_buffer, uint32_t data_buffer, uint32_t data_len){
-	char *header, *eol;
-	uint32_t size_pkt = 0;
 
-	header = malloc(HEADER_SIZE);
-	get_header(header, type);
-
-	eol = malloc(1);
-	strcpy(eol, EOL_PKT);
-
-	memcpy(pkt, header, HEADER_SIZE);
-	size_pkt += HEADER_SIZE;
-	memcpy(pkt + size_pkt, &address_buffer, sizeof(uint32_t));
-	size_pkt += sizeof(uint32_t);
-	memcpy(pkt + size_pkt, (uint32_t *)data_buffer, data_len);
-	size_pkt += data_len;
-	memcpy(pkt + size_pkt, eol, strlen(EOL_PKT));
-	size_pkt += strlen(EOL_PKT);
-
-	return size_pkt;
-}
-
-
-/*
- * PRIVATE
- * Write data/inode on the disk
- */
-HAL_StatusTypeDef virtual_flash_write(uint32_t* address, uint32_t data, uint32_t data_len){
-	char *pkt = malloc(HEADER_SIZE + sizeof(address) + data_len);
-	uint32_t size_pkt = create_packet(pkt, WRITE_PKT, address, data, data_len);
-	HAL_DMA_Start_IT(ghdma_usart2_tx, (uint32_t)pkt, (uint32_t)&gHuart->Instance->DR, size_pkt);
-
-	address_to_write += data_len;
-	superblock.ptr_data_address = address_to_write;
-
-	// This must be here! USART writes too fast
-	HAL_Delay(25);
-
-	return HAL_OK;
-}
 
 
 HAL_StatusTypeDef virtual_terminal_write(uint32_t data, uint32_t data_len){
@@ -172,13 +302,12 @@ void fs_init(UART_HandleTypeDef *huart, DMA_HandleTypeDef *hdma_usart_tx, DMA_Ha
 	 * 0 - Input
 	 * 1 - Output
 	 */
-	next_fd = 2;
 
 	initialize_superblock();
 //	memset(superblock.inode_list, 0, sizeof(ifile_t)*_INODE_LIST_LIMIT);
 //
 //	superblock.ptr_data_address = _VZCFS_DISK_START;
-//	superblock.ptr_inode_address = superblock_pointer_t;
+//	superblock.ptr_dinode_address = superblock_pointer_t;
 
 
 
@@ -189,7 +318,7 @@ void fs_init(UART_HandleTypeDef *huart, DMA_HandleTypeDef *hdma_usart_tx, DMA_Ha
 
 	// Only for tests
 	//superblock.ptr_data_address = 0x00000101;
-	address_to_write = 0x00000101;
+//	uint32_t address_to_write = 0x00000101;
 
 //	char *s = "helooooo";
 //	virtual_flash_write((uint32_t *)0x00012345, (uint32_t)s, strlen(s)+1);
@@ -197,7 +326,7 @@ void fs_init(UART_HandleTypeDef *huart, DMA_HandleTypeDef *hdma_usart_tx, DMA_Ha
 
 	// disk size 1024
 //	virtual_flash_write((uint32_t *)address_to_write, (uint32_t)s, strlen(s)+1);
-	virtual_flash_write((uint32_t *)superblock_pointer_t, (uint32_t)&superblock, sizeof(superblock_t));
+//	virtual_flash_write((uint32_t *)superblock_pointer_t, (uint32_t)&superblock, sizeof(superblock_t));
 }
 
 

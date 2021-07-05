@@ -29,8 +29,6 @@
 #define DATA_DELIMITER "#"
 #define EOL_PKT "_end"
 
-uint32_t next_fd;
-
 // Functions
 void fs_init(UART_HandleTypeDef *huart, DMA_HandleTypeDef *hdma_usart_tx, DMA_HandleTypeDef *hdma_usart_rx);
 uint32_t fs_open(char* file_name);
@@ -51,8 +49,9 @@ DMA_HandleTypeDef *ghdma_usart2_rx;
  */
 /* Singleton Superblock */
 typedef struct __attribute__((__packed__)) block{
-	uint32_t ptr_data_address;  // last written address for data
-	uint32_t ptr_inode_address; // last written address for inode
+	uint32_t ptr_data_address;   // last written address for data
+	uint32_t ptr_dinode_address; // last written address for inode
+	uint32_t next_fd;			 // next fd to write
 	ifile_t inode_list[_INODE_LIST_LIMIT];
 }superblock_t;
 superblock_t superblock;
