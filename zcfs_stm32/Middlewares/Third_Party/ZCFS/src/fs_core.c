@@ -309,6 +309,22 @@ HAL_StatusTypeDef dinode_write(uint32_t fd, char* data, uint32_t data_len){
 	//		idfile_t old_idfile = virtual_flash_read((uint32_t *)old_dinode_addr, (uint32_t)?????????, sizeof(idfile_t));
 	//		old_idfile.next_dinode = dinode_addr;
 	//		virtual_flash_write((uint32_t *)old_dinode_addr, (uint32_t)old_idfile, sizeof(idfile_t));
+
+
+			/*
+			 * UPDATE OLD DINODE
+			 */
+			idfile_t old_dinode;
+			dinode_read((uint32_t*)superblock.inode_list[fd].last_dinode, &old_dinode);
+			old_dinode.next_dinode = (idfile_t *)dinode_addr;
+			virtual_flash_write((uint32_t*)superblock.inode_list[fd].last_dinode, (uint32_t)&old_dinode, sizeof(idfile_t));
+
+			/*
+			 * UPDATE INODE LAST DINODE ADDRESS
+			 */
+			superblock.inode_list[fd].last_dinode = (idfile_t *)dinode_addr;
+			virtual_flash_write((uint32_t*)get_inode_addr_to_wrt(fd), (uint32_t)&superblock.inode_list[fd], sizeof(ifile_t));
+
 		}
 
 		superblock.ptr_dinode_address -= sizeof(idfile_t);
@@ -358,7 +374,7 @@ void initialize_superblock(){
 	dinode_write(fd_test, s, strlen(s)+1);
 //	dinode_write(fd_test_2, s2, strlen(s2)+1);
 
-//	dinode_write(fd_test, s2, strlen(s2)+1);
+	dinode_write(fd_test, s2, strlen(s2)+1);
 
 
 //	char s3[sizeof(uint32_t)*16];
