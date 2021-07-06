@@ -35,8 +35,9 @@ typedef struct __attribute__((__packed__)) inode_file{
 //	char* data_ptr;			 /* ptr to the file data  */
 	uint32_t time;			 /* time of the last edit */
 	uint32_t size;			 /* size of the file 	  */
-	uint8_t is_open:1;	     /* file opened = 1 bit  */
+	uint8_t is_open:1;	     /* file opened = 1 bit   */
 
+	idfile_t* last_dinode;   /* last dinode	          */
 	idfile_t* next_dinode;   /* next inode	          */
 } ifile_t;
 
