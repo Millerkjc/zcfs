@@ -29,10 +29,20 @@ uint32_t get_dinode_addr_to_wrt();
 
 void get_header(char *, uint32_t);
 HAL_StatusTypeDef virtual_flash_write(uint32_t* address, uint32_t data, uint32_t data_len);
+HAL_StatusTypeDef virtual_flash_read(uint32_t* address, uint32_t* data, uint32_t data_len);
+
 uint32_t create_packet(char*, uint32_t, uint32_t*, uint32_t, uint32_t);
+uint32_t create_packet_read(char* pkt, uint32_t* address_buffer, uint32_t data_len);
+
 HAL_StatusTypeDef inode_write(uint32_t id, char* name, uint32_t time, uint32_t size, uint8_t is_open, idfile_t* last_dinode, idfile_t* next_dinode);
 HAL_StatusTypeDef dinode_write(uint32_t fd, char* data, uint32_t data_len);
 HAL_StatusTypeDef data_write(char* data, uint32_t data_len);
+
+//ifile_t* inode_read(uint32_t fd);
+void dinode_read(uint32_t* address, idfile_t* dinode);
+void data_read(uint32_t* address, char* data, uint32_t data_len);
+
+
 void update_superblock_metadata();
 
 
@@ -201,34 +211,30 @@ HAL_StatusTypeDef virtual_flash_read(uint32_t* address, uint32_t* data, uint32_t
 
 	while(HAL_UART_Transmit_DMA(gHuart, (uint8_t*)pkt, size_pkt) != HAL_OK){};
 
-	for(int i=0; i<100000; i++);
-
+	/*
+	 * RACE CONDITION su USART troppo lenta rispetto al trigger dell'istruzione successiva
+	 * No HAL_Delay a causa di HAL_UART_Transmit_DMA
+	 */
+//	for(int i=0; i<100000; i++);
 
 	while(HAL_UART_Receive(gHuart, (uint8_t*)data, data_len, HAL_MAX_DELAY)!= HAL_OK){};
 
 
-	/*
-	 *
-	 * RACE CONDITION pkt[pkt_tmp_size] su USART troppo lenta rispetto al trigger della funzione
-	 * No HAL_Delay a causa di HAL_UART_Transmit_DMA
-	 *
-	 */
-
-	// This must be here! USART writes too fast // 500000/100000!!!
-//	for(int i=0; i<500000; i++);
 //	for(int i=0; i<100000; i++);
-//	HAL_Delay(50);
+
 
 	return HAL_OK;
 
 }
 
 
+void dinode_read(uint32_t* address, idfile_t* dinode){
+	virtual_flash_read(address, (uint32_t*)&dinode, sizeof(idfile_t));
+}
 
-
-
-
-
+void data_read(uint32_t* address, char* data, uint32_t data_len){
+	virtual_flash_read(address, (uint32_t*)&data, data_len);
+}
 
 
 
@@ -261,7 +267,7 @@ HAL_StatusTypeDef inode_write(uint32_t id, char* name, uint32_t time, uint32_t s
 	update_superblock_metadata();
 
 	if(id >= 2){
-		pending_dinode_insert(superblock.inode_list[id], NULL);
+		pending_dinode_insert(&superblock.inode_list[id], NULL);
 	}
 
 	return HAL_OK;
@@ -276,7 +282,8 @@ HAL_StatusTypeDef dinode_write(uint32_t fd, char* data, uint32_t data_len){
 	uint32_t idx_fd_file = pending_fd_find(fd);
 
 	if(idx_fd_file != -1){
-		uint32_t* old_dinode_addr = pending_dinode_get(idx_fd_file);
+//		uint32_t* old_dinode_addr = pending_dinode_get(idx_fd_file);
+		uint32_t* old_dinode_addr = (uint32_t*)superblock.inode_list[fd].last_dinode;
 
 		idfile_t* dinode_file = malloc(sizeof(idfile_t));
 		dinode_file->data_ptr = (char *)superblock.ptr_data_address;
@@ -293,6 +300,7 @@ HAL_StatusTypeDef dinode_write(uint32_t fd, char* data, uint32_t data_len){
 			 */
 			superblock.inode_list[fd].next_dinode = (idfile_t *)dinode_addr;
 			superblock.inode_list[fd].last_dinode = (idfile_t *)dinode_addr;
+			virtual_flash_write((uint32_t*)get_inode_addr_to_wrt(fd), (uint32_t)&superblock.inode_list[fd], sizeof(ifile_t));
 
 		}else{
 
@@ -343,15 +351,18 @@ void initialize_superblock(){
 	uint32_t fd_test_2 = superblock.next_fd;
 	inode_write(fd_test_2, "test0", 42, 41, 1, NULL, NULL);
 
-//	char *s = "AAAAAAABBBBB";
-//	char *s2 = "hello world";
-//
-//	dinode_write(fd_test, s, strlen(s)+1);
+	char *s = "AAAAAAABBBBB";
+	char *s2 = "hello world";
+
+
+	dinode_write(fd_test, s, strlen(s)+1);
 //	dinode_write(fd_test_2, s2, strlen(s2)+1);
 
+//	dinode_write(fd_test, s2, strlen(s2)+1);
 
-	char s[sizeof(uint32_t)*16];
-	virtual_flash_read((uint32_t *)superblock_pointer_t, (uint32_t*)s, sizeof(uint32_t)*16);
+
+//	char s3[sizeof(uint32_t)*16];
+//	virtual_flash_read((uint32_t *)superblock_pointer_t, (uint32_t*)s3, sizeof(uint32_t)*16);
 
 
 
