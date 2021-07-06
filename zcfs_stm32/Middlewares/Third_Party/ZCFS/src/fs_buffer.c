@@ -151,9 +151,10 @@ HAL_StatusTypeDef buffer_insert(main_buffer_t* mbuf, uint32_t id, char *data, ui
 
 pending_buffer_t* pending_buffer_init(){
 	pending_buffer_t* pbuffi = (pending_buffer_t *)malloc(sizeof(pending_buffer_t));
-	pbuffi->last_dinode = (linked_list_t *)malloc(sizeof(linked_list_t));
+//	pbuffi->last_dinode = (linked_list_t *)malloc(sizeof(linked_list_t));
+	//	linked_list_init(pbuffi->last_dinode);
+
 	pbuffi->list_new_fd = (linked_list_t *)malloc(sizeof(linked_list_t));
-	linked_list_init(pbuffi->last_dinode);
 	linked_list_init(pbuffi->list_new_fd);
 
 	return pbuffi;
@@ -165,7 +166,7 @@ HAL_StatusTypeDef pending_dinode_insert(ifile_t* list_new_inode, uint32_t* last_
 	 */
 
 	linked_list_append(pbuffi->list_new_fd, &list_new_inode->id);
-	linked_list_append(pbuffi->last_dinode, &last_inode_data);
+//	linked_list_append(pbuffi->last_dinode, &last_inode_data);
 
 	return HAL_OK;
 }
@@ -177,16 +178,16 @@ uint32_t pending_fd_find(uint32_t fd){
 	return linked_list_find_fd(pbuffi->list_new_fd, fd);
 }
 
-/*
- * return NULL quando file non è stato trovato
- */
-uint32_t* pending_dinode_get(uint32_t idx){
-	if(idx != -1){
-		return (uint32_t *)linked_list_get(pbuffi->last_dinode, idx);
-	}
-
-	return NULL;
-}
+///*
+// * return NULL quando file non è stato trovato
+// */
+//uint32_t* pending_dinode_get(uint32_t idx){
+//	if(idx != -1){
+//		return (uint32_t *)linked_list_get(pbuffi->last_dinode, idx);
+//	}
+//
+//	return NULL;
+//}
 
 
 //uint32_t* pending_dinode_get(uint32_t idx){
@@ -215,7 +216,7 @@ int linked_list_find_fd(linked_list_t *list, int fd){
 	list_item_t *current = list->head;
 	uint32_t pos = 0;
 
-	while(current != NULL && (uint32_t)current->data != fd){
+	while(current != NULL && *(uint32_t*)current->data != fd){
 		pos+=1;
 		current = current->next;
 	}

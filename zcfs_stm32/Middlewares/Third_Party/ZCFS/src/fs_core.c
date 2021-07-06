@@ -200,8 +200,11 @@ HAL_StatusTypeDef virtual_flash_read(uint32_t* address, uint32_t* data, uint32_t
 	uint32_t size_pkt = create_packet_read(pkt, address, data_len);
 
 	while(HAL_UART_Transmit_DMA(gHuart, (uint8_t*)pkt, size_pkt) != HAL_OK){};
-	while(HAL_UART_Receive(gHuart, (uint8_t*)data, data_len, HAL_MAX_DELAY)!= HAL_OK){};
 
+	for(int i=0; i<100000; i++);
+
+
+	while(HAL_UART_Receive(gHuart, (uint8_t*)data, data_len, HAL_MAX_DELAY)!= HAL_OK){};
 
 
 	/*
@@ -213,7 +216,7 @@ HAL_StatusTypeDef virtual_flash_read(uint32_t* address, uint32_t* data, uint32_t
 
 	// This must be here! USART writes too fast // 500000/100000!!!
 //	for(int i=0; i<500000; i++);
-	for(int i=0; i<100000; i++);
+//	for(int i=0; i<100000; i++);
 //	HAL_Delay(50);
 
 	return HAL_OK;
