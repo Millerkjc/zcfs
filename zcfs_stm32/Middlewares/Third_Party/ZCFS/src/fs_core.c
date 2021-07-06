@@ -30,7 +30,7 @@ uint32_t get_dinode_addr_to_wrt();
 void get_header(char *, uint32_t);
 HAL_StatusTypeDef virtual_flash_write(uint32_t* address, uint32_t data, uint32_t data_len);
 uint32_t create_packet(char*, uint32_t, uint32_t*, uint32_t, uint32_t);
-HAL_StatusTypeDef inode_write(uint32_t id, char* name, uint32_t time, uint32_t size, uint8_t is_open, idfile_t* next_dinode);
+HAL_StatusTypeDef inode_write(uint32_t id, char* name, uint32_t time, uint32_t size, uint8_t is_open, idfile_t* last_dinode, idfile_t* next_dinode);
 HAL_StatusTypeDef dinode_write(uint32_t fd, char* data, uint32_t data_len);
 HAL_StatusTypeDef data_write(char* data, uint32_t data_len);
 void update_superblock_metadata();
@@ -108,6 +108,50 @@ uint32_t create_packet(char* pkt, uint32_t type, uint32_t* address_buffer, uint3
 }
 
 
+
+
+
+
+
+uint32_t create_packet_read(char* pkt, uint32_t* address_buffer, uint32_t data_len){
+	char *header, *eol;
+	uint32_t size_pkt = 0;
+
+	header = malloc(HEADER_SIZE);
+	get_header(header, READ_PKT);
+
+	eol = malloc(strlen(EOL_PKT));
+	strcpy(eol, EOL_PKT);
+
+	memcpy(pkt, header, HEADER_SIZE);
+	size_pkt += HEADER_SIZE;
+	memcpy(pkt + size_pkt, &address_buffer, sizeof(uint32_t));
+	size_pkt += sizeof(uint32_t);
+	//	memcpy(pkt + size_pkt, (uint32_t *)data_buffer, data_len);
+	//	size_pkt += data_len;
+	memcpy(pkt + size_pkt, &data_len, sizeof(uint32_t));
+	size_pkt += sizeof(uint32_t);
+	memcpy(pkt + size_pkt, eol, strlen(EOL_PKT));
+	size_pkt += strlen(EOL_PKT);
+
+	free(header);
+	free(eol);
+
+	return size_pkt;
+}
+
+
+
+
+
+
+
+
+
+
+
+
+
 /*
  * PRIVATE
  * Write data/inode on the disk
@@ -145,23 +189,67 @@ HAL_StatusTypeDef virtual_flash_write(uint32_t* address, uint32_t data, uint32_t
 
 
 
+HAL_StatusTypeDef virtual_flash_read(uint32_t* address, uint32_t* data, uint32_t data_len){
+	//char *pkt = malloc(HEADER_SIZE + sizeof(address) + data_len);
+	int pkt_tmp_size = HEADER_SIZE + sizeof(address) + data_len;
+	char pkt[pkt_tmp_size];
+
+
+	memset(pkt, 0, HEADER_SIZE + sizeof(address) + data_len);
+
+	uint32_t size_pkt = create_packet_read(pkt, address, data_len);
+
+	while(HAL_UART_Transmit_DMA(gHuart, (uint8_t*)pkt, size_pkt) != HAL_OK){};
+	while(HAL_UART_Receive(gHuart, (uint8_t*)data, data_len, HAL_MAX_DELAY)!= HAL_OK){};
+
+
+
+	/*
+	 *
+	 * RACE CONDITION pkt[pkt_tmp_size] su USART troppo lenta rispetto al trigger della funzione
+	 * No HAL_Delay a causa di HAL_UART_Transmit_DMA
+	 *
+	 */
+
+	// This must be here! USART writes too fast // 500000/100000!!!
+//	for(int i=0; i<500000; i++);
+	for(int i=0; i<100000; i++);
+//	HAL_Delay(50);
+
+	return HAL_OK;
+
+}
+
+
+
+
+
+
+
+
+
+
+
+
+
 /*
  * INODE
  */
 
-void set_ifile(ifile_t* ifile, uint32_t id, char* name, uint32_t time, uint32_t size, uint8_t is_open, idfile_t* next_dinode){
+void set_ifile(ifile_t* ifile, uint32_t id, char* name, uint32_t time, uint32_t size, uint8_t is_open, idfile_t* last_dinode, idfile_t* next_dinode){
 	ifile->id = id;
 	strncpy(ifile->name, name, FNAME_LENGTH);
 	ifile->time = time;
 	ifile->size = size;
 	ifile->is_open = is_open;
+	ifile->last_dinode = last_dinode;
 	ifile->next_dinode = next_dinode;
 }
 
 
-HAL_StatusTypeDef inode_write(uint32_t id, char* name, uint32_t time, uint32_t size, uint8_t is_open, idfile_t* next_dinode){
+HAL_StatusTypeDef inode_write(uint32_t id, char* name, uint32_t time, uint32_t size, uint8_t is_open, idfile_t* last_dinode, idfile_t* next_dinode){
 	// Write on RAM
-	set_ifile(&superblock.inode_list[id], id, name, time, size, is_open, next_dinode);
+	set_ifile(&superblock.inode_list[id], id, name, time, size, is_open, last_dinode, next_dinode);
 
 	// Write on disk
 	virtual_flash_write((uint32_t*)get_inode_addr_to_wrt(id), (uint32_t)&superblock.inode_list[id], sizeof(ifile_t));
@@ -201,6 +289,7 @@ HAL_StatusTypeDef dinode_write(uint32_t fd, char* data, uint32_t data_len){
 			 * First dinode! -> write address direct to inode
 			 */
 			superblock.inode_list[fd].next_dinode = (idfile_t *)dinode_addr;
+			superblock.inode_list[fd].last_dinode = (idfile_t *)dinode_addr;
 
 		}else{
 
@@ -242,21 +331,29 @@ void initialize_superblock(){
 
 	virtual_flash_write((uint32_t *)superblock_pointer_t, (uint32_t)&superblock, sizeof(uint32_t)*16);
 
-	inode_write(STDIN, "STDIN", 0, 0, 1, NULL);
-	inode_write(STDOUT, "STDOUT", 0, 0, 1, NULL);
+	inode_write(STDIN, "STDIN", 0, 0, 1, NULL, NULL);
+	inode_write(STDOUT, "STDOUT", 0, 0, 1, NULL, NULL);
 
 	uint32_t fd_test = superblock.next_fd;
-	inode_write(fd_test, "wrt0", 42, 41, 1, NULL);
+	inode_write(fd_test, "wrt0", 42, 41, 1, NULL, NULL);
 
 	uint32_t fd_test_2 = superblock.next_fd;
-	inode_write(fd_test_2, "test0", 42, 41, 1, NULL);
+	inode_write(fd_test_2, "test0", 42, 41, 1, NULL, NULL);
 
-	char *s = "AAAAAAABBBBB";
-	char *s2 = "hello world";
+//	char *s = "AAAAAAABBBBB";
+//	char *s2 = "hello world";
+//
+//	dinode_write(fd_test, s, strlen(s)+1);
+//	dinode_write(fd_test_2, s2, strlen(s2)+1);
 
 
-	dinode_write(fd_test, s, strlen(s)+1);
-	dinode_write(fd_test_2, s2, strlen(s2)+1);
+	char s[sizeof(uint32_t)*16];
+	virtual_flash_read((uint32_t *)superblock_pointer_t, (uint32_t*)s, sizeof(uint32_t)*16);
+
+
+
+
+
 
 
 //	virtual_flash_write((uint32_t *)superblock_pointer_t, (uint32_t)&superblock, sizeof(superblock_t), 50);
