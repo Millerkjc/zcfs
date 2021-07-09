@@ -17,12 +17,6 @@
 #include <stdio.h>
 #include "fs_syscalls.h"
 
-//void* __attribute((__section__(".user_data"))) user_data;
-//extern int __user_data_start__, __user_data_end__;
-//#define _VZCFS_DISK_START (uint32_t)&__user_data_start__
-//#define _VZCFS_DISK_SIZE 524288
-//uint32_t write_ptr = _VZCFS_DISK_START;
-
 #define STDIN_FILENO  0
 #define STDOUT_FILENO 1
 #define STDERR_FILENO 2
@@ -31,10 +25,13 @@
 uint32_t find_file(char* file_name){
 	int ptr = 2;
 
-	while(ptr<next_fd){
-		if(!strncmp(superblock.inode_list[ptr]->name, file_name, FNAME_LENGTH)){
-			return superblock.inode_list[ptr]->id;
-		}
+	while(ptr<superblock.next_fd){
+		// Lettura su disco
+		//if(!strncmp(superblock.inode_list[ptr]->name, file_name, FNAME_LENGTH)){
+		//	return superblock.inode_list[ptr]->id;
+		//}
+
+		// READ
 
 		ptr++;
 	}
@@ -42,20 +39,12 @@ uint32_t find_file(char* file_name){
 	return -1;
 }
 
-//typedef struct __attribute__((__packed__)) inode_file{
-//	uint32_t id;			/* file identifier 		 */
-//	char name[FNAME_LENGTH]; 		 	/* 15 + '\0' 			 */
-//
-////	char* data_ptr;			/* ptr to the file data  */
-//	uint32_t time;			/* time of the last edit */
-//	uint32_t size;			/* size of the file 	 */
-//
-//	idfile_t* next_dinode;    /* next inode	         */
-//} ifile_t;
-
 
 uint32_t create_file(char* file_name){
-	//ifile_t
+	/*
+	 *
+	 */
+	// TODO creazione inode => ifile_t
 
 	//superblock.inode_list[next_fd]->id;
 	//next_fd+=1;
@@ -111,7 +100,6 @@ int _write(int fd, char* ptr, int len) {
 int _open(char* file_name)
 {
 
-
 	int fd = find_file(file_name);
 
 	// File not exists
@@ -121,7 +109,6 @@ int _open(char* file_name)
 		 * - create inode
 		 * - insert into the superblock
 		 * - insert inode into pending_list (open files)
-		 *
 		 */
 		create_file(file_name);
 		// TODO redefine fd -> generate fd
@@ -130,17 +117,18 @@ int _open(char* file_name)
 	}
 
 	/*
-	 * Se il file fosse chiuso
+	 * if existing file was closed
+	 * TODO MUST read from disk
 	 */
-	if (!superblock.inode_list[fd]->is_open){
-		superblock.inode_list[fd]->is_open = 1;
+//	if (!superblock.inode_list[fd]->is_open){
+//		superblock.inode_list[fd]->is_open = 1;
 
 		/*
 		 * reinsert into pending_list (open files)
 		 */
 		// Insert Inode
 		// Insert last data TODO - until next_dinode = NULL
-	}
+//	}
 
 	return (uint32_t)fd;
 

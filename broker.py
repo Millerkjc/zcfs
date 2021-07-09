@@ -260,7 +260,6 @@ if __name__ == '__main__':
         while True:
             pkt = ser.read_until(eol_pkt)
 
-            print("==== pkt read arrived")
             if(len(pkt) < 50):
                 print_pkt_metadata(pkt)
 
@@ -278,11 +277,15 @@ if __name__ == '__main__':
                 write_to_disk(int(disk_addr, 16), pkt_data)
                 print_pkt_metadata(pkt)
             else:
+                print("==== pkt read arrived")
                 print("START WRITING")
                 print_pkt_metadata(pkt)
                 start = get_addr_pkt_wrt(pkt)
                 end = get_data_pkt(pkt)
                 end_2 = '0x' +''.join(['{:02x}'.format(x) for x in end[::-1]])
+
+                print("s - e:", start, ", ", end_2)
+                print("d: ", b''.join(disk[int(start,16):int(start,16) + int(end_2,16)]))
 
                 #print('start: ', start, ", t:", type(start), ", int: ", int(start,16))
                 #print('end_2: ', end_2, ", t:", type(end_2), ", int: ", int(end_2,16))

@@ -217,7 +217,11 @@ HAL_StatusTypeDef virtual_flash_read(uint32_t* address, uint32_t* data, uint32_t
 	 */
 //	for(int i=0; i<100000; i++);
 
+
+//	while(HAL_UART_Receive(gHuart, (uint8_t*)test, data_len, HAL_MAX_DELAY)!= HAL_OK){};
 	while(HAL_UART_Receive(gHuart, (uint8_t*)data, data_len, HAL_MAX_DELAY)!= HAL_OK){};
+
+//	memcpy(data, test, data_len);
 
 
 //	for(int i=0; i<100000; i++);
@@ -229,11 +233,11 @@ HAL_StatusTypeDef virtual_flash_read(uint32_t* address, uint32_t* data, uint32_t
 
 
 void dinode_read(uint32_t* address, idfile_t* dinode){
-	virtual_flash_read(address, (uint32_t*)&dinode, sizeof(idfile_t));
+	virtual_flash_read(address, (uint32_t*)dinode, sizeof(idfile_t));
 }
 
 void data_read(uint32_t* address, char* data, uint32_t data_len){
-	virtual_flash_read(address, (uint32_t*)&data, data_len);
+	virtual_flash_read(address, (uint32_t*)data, data_len);
 }
 
 
@@ -367,14 +371,22 @@ void initialize_superblock(){
 	uint32_t fd_test_2 = superblock.next_fd;
 	inode_write(fd_test_2, "test0", 42, 41, 1, NULL, NULL);
 
+	uint32_t fd_test_3 = superblock.next_fd;
+	inode_write(fd_test_3, "file3", 42, 41, 1, NULL, NULL);
+
 	char *s = "AAAAAAABBBBB";
 	char *s2 = "hello world";
+	char *s3 = "TRIIIIIIIIII";
 
 
 	dinode_write(fd_test, s, strlen(s)+1);
-//	dinode_write(fd_test_2, s2, strlen(s2)+1);
+	dinode_write(fd_test_2, s2, strlen(s2)+1);
+	dinode_write(fd_test_3, s3, strlen(s3)+1);
+	dinode_write(fd_test, s, strlen(s2)+1);
+	dinode_write(fd_test_2, s2, strlen(s2)+1);
+	dinode_write(fd_test_3, s3, strlen(s3)+1);
+	dinode_write(fd_test_3, s3, strlen(s3)+1);
 
-	dinode_write(fd_test, s2, strlen(s2)+1);
 
 
 //	char s3[sizeof(uint32_t)*16];
