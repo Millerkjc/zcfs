@@ -49,11 +49,13 @@ void buffer_reset(main_buffer_t* mbuf);
 main_buffer_t* buffer_init(main_buffer_t* mbuf);
 void buffer_flush();
 HAL_StatusTypeDef buffer_insert(main_buffer_t* mbuf, uint32_t fd, char *data, uint32_t len);
+
 // file buffers
 void fbuffer_reset(file_buffer_t* fbuf);
 file_buffer_t* fbuffer_init(file_buffer_t* fbuf, uint32_t id);
 HAL_StatusTypeDef fbuffer_insert(file_buffer_t* fbuf, char *data, uint32_t len);
-void fbuffer_flush();
+void fbuffer_flush(file_buffer_t* fbuf);
+
 // pending inode buffer
 pending_buffer_t* pending_buffer_init();
 //HAL_StatusTypeDef pending_inode_insert(ifile_t* list_new_inode, idfile_t* last_inode_data);

@@ -83,8 +83,8 @@ void fbuffer_flush(file_buffer_t* fbuf){
 		strcat(fbuf->file_buffer, end);
 		dinode_write(fbuf->fd, fbuf->file_buffer, fbuf->bfill + 1);
 
-		free(&fbuf->file_buffer);
-		fbuf->file_buffer = NULL;
+		free(fbuf->file_buffer);
+//		fbuf->file_buffer = NULL;
 //		fbuffer_reset(fbuf);
 //		free(fbuf);
 //		fbuf = NULL;
@@ -122,13 +122,11 @@ void buffer_flush(main_buffer_t* mbuf){
 	for(int b=2; b < _INODE_LIST_LIMIT; b++){
 		fbuffer_flush(mbuf->list[b]);
 		if(mbuf->list[b]){
-			free(mbuf->list[b]);
+			free((uint32_t *)mbuf->list[b]);
 			mbuf->list[b] = NULL;
 		}
-//		memset(mbuf->list[b], 0, sizeof(file_buffer_t*));
 	}
 
-//	buffer_reset(mbuf);
 	mbuf->files=0;
 	mbuf->size=0;
 }
