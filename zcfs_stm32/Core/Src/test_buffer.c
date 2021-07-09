@@ -6,20 +6,21 @@
 */
 
 void test_fbuf_init(){
-	char s[30];
-
-	for(int i=0; i<2; i++){
-	  file_buffer_t *fbuf;
-	  fbuf = fbuffer_init(fbuf, i);
-
-	  uint32_t id = fbuf->fd;
-	  uint32_t x = fbuf->bfill;
-	  uint32_t y = fbuf->size;
-	  fbuf->file_buffer = "hello\0";
-
-	  sprintf(s, "%d : %s", i, fbuf->file_buffer);
-
-	}
+//	char s[30];
+//
+//	for(int i=0; i<2; i++){
+//	  file_buffer_t *fbuf;
+////	  fbuf = fbuffer_init(fbuf, i);
+//	  fbuffer_init(fbuf, i);
+//
+//	  uint32_t id = fbuf->fd;
+//	  uint32_t x = fbuf->bfill;
+//	  uint32_t y = fbuf->size;
+//	  fbuf->file_buffer = "hello\0";
+//
+//	  sprintf(s, "%d : %s", i, fbuf->file_buffer);
+//
+//	}
 
 	//assert(strcmp(s, "1 : hello"));
 
@@ -30,7 +31,8 @@ void test_fbuf_insert_flush(){
 	   * FBuff insert test
 	   */
 	  file_buffer_t *fbuf = NULL;
-	  fbuf = fbuffer_init(fbuf, 1);
+//	  fbuf = fbuffer_init(fbuf, 1);
+	  fbuffer_init(fbuf, 1);
 	  fbuffer_insert(fbuf, "test", 4);
 	  char s[30];
 	  sprintf(s, "%lu : %s", fbuf->fd, fbuf->file_buffer);

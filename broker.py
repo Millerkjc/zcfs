@@ -121,7 +121,7 @@ def partial_print(p_disk_size=8):
     Bprint_disk(0, 64, p_disk_size)
     print('.....')
     print('*** Superblock ***')
-    print_disk(superblock_address_5MB, superblock_address_5MB + 64, p_disk_size)
+    print_disk(superblock_address_5MB, superblock_address_5MB + 128, p_disk_size)
 
 def print_superblock(stop=64, p_disk_size=8):
     print('Superblock:')
@@ -297,7 +297,7 @@ if __name__ == '__main__':
             print_data()
             print('DINODE')
             print_dinode()
-            print_superblock(128)
+            print_superblock(256)
             
     except Exception as e:
         e.printStackTrace()
