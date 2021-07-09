@@ -92,13 +92,17 @@ void get_header(char *header, uint32_t type){
  * 		      Es: "zcfs_write_@FLASH#RAW_DATA@INODE#ADDRESS_end"
  */
 uint32_t create_packet(char* pkt, uint32_t type, uint32_t* address_buffer, uint32_t data_buffer, uint32_t data_len){
-	char *header, *eol;
+//	char *header, *eol;
 	uint32_t size_pkt = 0;
 
-	header = malloc(HEADER_SIZE);
+	int len_eol = strlen(EOL_PKT);
+	char header[HEADER_SIZE], eol[len_eol];
+
+
+//	header = malloc(HEADER_SIZE);
 	get_header(header, type);
 
-	eol = malloc(strlen(EOL_PKT));
+//	eol = malloc(strlen(EOL_PKT));
 	strcpy(eol, EOL_PKT);
 
 	memcpy(pkt, header, HEADER_SIZE);
@@ -110,8 +114,8 @@ uint32_t create_packet(char* pkt, uint32_t type, uint32_t* address_buffer, uint3
 	memcpy(pkt + size_pkt, eol, strlen(EOL_PKT));
 	size_pkt += strlen(EOL_PKT);
 
-	free(header);
-	free(eol);
+//	free(header);
+//	free(eol);
 
 	return size_pkt;
 }
@@ -123,13 +127,17 @@ uint32_t create_packet(char* pkt, uint32_t type, uint32_t* address_buffer, uint3
 
 
 uint32_t create_packet_read(char* pkt, uint32_t* address_buffer, uint32_t data_len){
-	char *header, *eol;
+//	char *header, *eol;
 	uint32_t size_pkt = 0;
 
-	header = malloc(HEADER_SIZE);
+	int len_eol = strlen(EOL_PKT);
+	char header[HEADER_SIZE], eol[len_eol];
+
+
+//	header = malloc(HEADER_SIZE);
 	get_header(header, READ_PKT);
 
-	eol = malloc(strlen(EOL_PKT));
+//	eol = malloc(strlen(EOL_PKT));
 	strcpy(eol, EOL_PKT);
 
 	memcpy(pkt, header, HEADER_SIZE);
@@ -143,8 +151,8 @@ uint32_t create_packet_read(char* pkt, uint32_t* address_buffer, uint32_t data_l
 	memcpy(pkt + size_pkt, eol, strlen(EOL_PKT));
 	size_pkt += strlen(EOL_PKT);
 
-	free(header);
-	free(eol);
+//	free(header);
+//	free(eol);
 
 	return size_pkt;
 }
@@ -227,12 +235,16 @@ HAL_StatusTypeDef virtual_flash_read(uint32_t* address, uint32_t* data, uint32_t
 }
 
 
-void dinode_read(uint32_t* address, idfile_t* dinode){
-	virtual_flash_read(address, (uint32_t*)&dinode, sizeof(idfile_t));
+//void dinode_read(uint32_t* address, idfile_t* dinode){
+//	virtual_flash_read(address, (uint32_t*)dinode, sizeof(idfile_t));
+//}
+
+void dinode_read(uint32_t* address, uint32_t* dinode){
+	virtual_flash_read(address, dinode, sizeof(idfile_t));
 }
 
 void data_read(uint32_t* address, char* data, uint32_t data_len){
-	virtual_flash_read(address, (uint32_t*)&data, data_len);
+	virtual_flash_read(address, (uint32_t*)data, data_len);
 }
 
 
@@ -284,14 +296,15 @@ HAL_StatusTypeDef dinode_write(uint32_t fd, char* data, uint32_t data_len){
 //		uint32_t* old_dinode_addr = pending_dinode_get(idx_fd_file);
 		uint32_t* old_dinode_addr = (uint32_t*)superblock.inode_list[fd].last_dinode;
 
-		idfile_t* dinode_file = malloc(sizeof(idfile_t));
-		dinode_file->data_ptr = (char *)superblock.ptr_data_address;
-		dinode_file->next_dinode = NULL;
+//		idfile_t* dinode_file = malloc(sizeof(idfile_t));
+		idfile_t dinode_file;
+		dinode_file.data_ptr = superblock.ptr_data_address;
+		dinode_file.next_dinode = 0x0;
 
 		data_write(data, data_len);
 
 		uint32_t* dinode_addr = (uint32_t *)(superblock.ptr_dinode_address - sizeof(idfile_t));
-		virtual_flash_write(dinode_addr, (uint32_t)dinode_file, sizeof(idfile_t));
+		virtual_flash_write(dinode_addr, (uint32_t)&dinode_file, sizeof(idfile_t));
 
 		if (old_dinode_addr == NULL){
 			/*
@@ -314,8 +327,8 @@ HAL_StatusTypeDef dinode_write(uint32_t fd, char* data, uint32_t data_len){
 			 * UPDATE OLD DINODE
 			 */
 			idfile_t old_dinode;
-			dinode_read((uint32_t*)superblock.inode_list[fd].last_dinode, &old_dinode);
-			old_dinode.next_dinode = (idfile_t *)dinode_addr;
+			dinode_read((uint32_t*)superblock.inode_list[fd].last_dinode, (uint32_t*)&old_dinode);
+			old_dinode.next_dinode = (uint32_t)dinode_addr;
 			virtual_flash_write((uint32_t*)superblock.inode_list[fd].last_dinode, (uint32_t)&old_dinode, sizeof(idfile_t));
 
 			/*
@@ -371,16 +384,35 @@ void initialize_superblock(){
 
 	char *s = "AAAAAAABBBBB";
 	char *s2 = "hello world";
-	char *s3 = "TRIIIIIIIIII";
+    char *s3 = "secondo file RULES";
+    char *s4 = "TRIIIIIIIII";
 
 
-	dinode_write(fd_test, s, strlen(s)+1);
-	dinode_write(fd_test_2, s2, strlen(s2)+1);
-	dinode_write(fd_test_3, s3, strlen(s3)+1);
-	dinode_write(fd_test, s, strlen(s2)+1);
-	dinode_write(fd_test_2, s2, strlen(s2)+1);
-	dinode_write(fd_test_3, s3, strlen(s3)+1);
-	dinode_write(fd_test_3, s3, strlen(s3)+1);
+//	dinode_write(fd_test, s, strlen(s)+1);
+//	dinode_write(fd_test_2, s2, strlen(s2)+1);
+//	dinode_write(fd_test_3, s3, strlen(s3)+1);
+//	dinode_write(fd_test, s, strlen(s2)+1);
+//	dinode_write(fd_test_2, s2, strlen(s2)+1);
+//	dinode_write(fd_test_3, s3, strlen(s3)+1);
+//	dinode_write(fd_test_3, s3, strlen(s3)+1);
+
+
+    fs_write(fd_test, s, strlen(s));
+    fs_write(fd_test, s2, strlen(s2));
+    fs_write(fd_test_2, s2, strlen(s2));
+    buffer_flush(mbuf);
+    fs_write(fd_test_2, s3, strlen(s3));
+    fs_write(fd_test_3, s4, strlen(s4));
+    buffer_flush(mbuf);
+    fs_write(fd_test, s, strlen(s));
+    fs_write(fd_test_2, s3, strlen(s3));
+    fs_write(fd_test_3, s4, strlen(s4));
+    buffer_flush(mbuf);
+
+
+
+
+
 
 
 
@@ -516,7 +548,7 @@ uint32_t fs_write(uint32_t fd, char* ptr, uint32_t len){
 
 
 		if(len > _BUFFER_SIZE){
-//			return fs_error("buffer: write too big");
+			return fs_error("buffer: write too big");
 		}
 
 		HAL_StatusTypeDef hstatus = buffer_insert(mbuf, fd, ptr, len);
@@ -529,3 +561,12 @@ uint32_t fs_write(uint32_t fd, char* ptr, uint32_t len){
 
 	return -1;
 }
+
+
+uint32_t fs_error(char* error_msg){
+	// TODO Create error pkt and send through USART
+
+	return -1;
+}
+
+

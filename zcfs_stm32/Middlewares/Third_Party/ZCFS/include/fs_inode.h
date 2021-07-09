@@ -19,9 +19,10 @@
 /*
  * Data inode
  */
-typedef struct __attribute__((__packed__)) inode_file_data{
-	char* data_ptr;			/* ptr to the file data  */
-	struct inode_file_data* next_dinode;    /* next inode	         */
+//typedef struct __attribute__((__packed__)) inode_file_data{
+typedef struct inode_file_data{
+	uint32_t data_ptr;			/* ptr to the file data  */
+	uint32_t next_dinode;    /* next inode	         */
 } idfile_t;
 
 /*

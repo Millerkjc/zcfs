@@ -54,7 +54,7 @@ HAL_StatusTypeDef dinode_write(uint32_t fd, char* data, uint32_t data_len);
 HAL_StatusTypeDef data_write(char* data, uint32_t data_len);
 
 //ifile_t* inode_read(uint32_t fd);
-void dinode_read(uint32_t* address, idfile_t* dinode);
+void dinode_read(uint32_t* address, uint32_t* dinode);
 void data_read(uint32_t* address, char* data, uint32_t data_len);
 
 
