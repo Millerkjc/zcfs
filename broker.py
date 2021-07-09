@@ -112,9 +112,11 @@ def write_to_disk(address, data):
     for (pos,d) in enumerate(data):
         disk[address + pos] = bytes([d])
 
-def print_disk(starts=0, ends=disk_size, p_disk_size=4):
+def print_disk(starts=0, ends=disk_size, p_disk_size=4, hx=0):
     for address in range(starts, ends, p_disk_size):
-        print(('0x{:03x}: ' + ' {:02x}'*p_disk_size).format(address, *[ord(disk[idx]) for idx in range(address, address+p_disk_size)]))
+        print(('0x{:03x}: ' + ' {:02x}'*p_disk_size + (' | ' + '{:c}'*p_disk_size)*hx).format(address, *[ord(disk[idx]) for idx in range(address, address+p_disk_size)], *[ord(disk[idx]) if chr(ord(disk[idx])).isprintable() else 46 for idx in range(address, address+p_disk_size)]))
+        ## 46  == '.'
+        
 
 def partial_print(p_disk_size=8):
     print('*** Disk ***')
@@ -125,7 +127,7 @@ def partial_print(p_disk_size=8):
 
 def print_superblock(stop=64, p_disk_size=8):
     print('Superblock:')
-    print_disk(superblock_address_5MB, superblock_address_5MB + stop, p_disk_size)
+    print_disk(superblock_address_5MB, superblock_address_5MB + stop, p_disk_size, 1)
 
 def print_dinode(p_disk_size=8):
     dinode_addr = get_last_dinode_address()
@@ -135,7 +137,7 @@ def print_dinode(p_disk_size=8):
 def print_data(p_disk_size=8):
     data_addr = get_last_data_address()
     print('last data_address:', hex(data_addr))
-    print_disk(0, data_addr, p_disk_size)
+    print_disk(0, data_addr, p_disk_size, 1)
 
 
 #

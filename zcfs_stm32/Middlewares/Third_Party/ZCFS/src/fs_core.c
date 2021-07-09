@@ -92,17 +92,13 @@ void get_header(char *header, uint32_t type){
  * 		      Es: "zcfs_write_@FLASH#RAW_DATA@INODE#ADDRESS_end"
  */
 uint32_t create_packet(char* pkt, uint32_t type, uint32_t* address_buffer, uint32_t data_buffer, uint32_t data_len){
-//	char *header, *eol;
+	char *header, *eol;
 	uint32_t size_pkt = 0;
 
-	int len_eol = strlen(EOL_PKT);
-	char header[HEADER_SIZE], eol[len_eol];
-
-
-//	header = malloc(HEADER_SIZE);
+	header = malloc(HEADER_SIZE);
 	get_header(header, type);
 
-//	eol = malloc(strlen(EOL_PKT));
+	eol = malloc(strlen(EOL_PKT));
 	strcpy(eol, EOL_PKT);
 
 	memcpy(pkt, header, HEADER_SIZE);
@@ -114,8 +110,8 @@ uint32_t create_packet(char* pkt, uint32_t type, uint32_t* address_buffer, uint3
 	memcpy(pkt + size_pkt, eol, strlen(EOL_PKT));
 	size_pkt += strlen(EOL_PKT);
 
-//	free(header);
-//	free(eol);
+	free(header);
+	free(eol);
 
 	return size_pkt;
 }
@@ -127,32 +123,26 @@ uint32_t create_packet(char* pkt, uint32_t type, uint32_t* address_buffer, uint3
 
 
 uint32_t create_packet_read(char* pkt, uint32_t* address_buffer, uint32_t data_len){
-//	char *header, *eol;
+	char *header, *eol;
 	uint32_t size_pkt = 0;
 
-	int len_eol = strlen(EOL_PKT);
-	char header[HEADER_SIZE], eol[len_eol];
-
-
-//	header = malloc(HEADER_SIZE);
+	header = malloc(HEADER_SIZE);
 	get_header(header, READ_PKT);
 
-//	eol = malloc(strlen(EOL_PKT));
+	eol = malloc(strlen(EOL_PKT));
 	strcpy(eol, EOL_PKT);
 
 	memcpy(pkt, header, HEADER_SIZE);
 	size_pkt += HEADER_SIZE;
 	memcpy(pkt + size_pkt, &address_buffer, sizeof(uint32_t));
 	size_pkt += sizeof(uint32_t);
-	//	memcpy(pkt + size_pkt, (uint32_t *)data_buffer, data_len);
-	//	size_pkt += data_len;
 	memcpy(pkt + size_pkt, &data_len, sizeof(uint32_t));
 	size_pkt += sizeof(uint32_t);
 	memcpy(pkt + size_pkt, eol, strlen(EOL_PKT));
 	size_pkt += strlen(EOL_PKT);
 
-//	free(header);
-//	free(eol);
+	free(header);
+	free(eol);
 
 	return size_pkt;
 }
