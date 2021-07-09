@@ -32,8 +32,37 @@
 // Functions
 void fs_init(UART_HandleTypeDef *huart, DMA_HandleTypeDef *hdma_usart_tx, DMA_HandleTypeDef *hdma_usart_rx);
 uint32_t fs_open(char* file_name);
-HAL_StatusTypeDef fs_write(uint32_t fd, char* ptr, uint32_t len);
+uint32_t fs_write(uint32_t fd, char* ptr, uint32_t len);
+uint32_t fs_error(char* error_msg);
 //HAL_StatusTypeDef fs_read(int fd, char* ptr, int len);
+
+
+
+
+uint32_t get_inode_addr_to_wrt(uint32_t);
+uint32_t get_dinode_addr_to_wrt();
+
+void get_header(char *, uint32_t);
+HAL_StatusTypeDef virtual_flash_write(uint32_t* address, uint32_t data, uint32_t data_len);
+HAL_StatusTypeDef virtual_flash_read(uint32_t* address, uint32_t* data, uint32_t data_len);
+
+uint32_t create_packet(char*, uint32_t, uint32_t*, uint32_t, uint32_t);
+uint32_t create_packet_read(char* pkt, uint32_t* address_buffer, uint32_t data_len);
+
+HAL_StatusTypeDef inode_write(uint32_t id, char* name, uint32_t time, uint32_t size, uint8_t is_open, idfile_t* last_dinode, idfile_t* next_dinode);
+HAL_StatusTypeDef dinode_write(uint32_t fd, char* data, uint32_t data_len);
+HAL_StatusTypeDef data_write(char* data, uint32_t data_len);
+
+//ifile_t* inode_read(uint32_t fd);
+void dinode_read(uint32_t* address, idfile_t* dinode);
+void data_read(uint32_t* address, char* data, uint32_t data_len);
+
+
+
+
+
+
+
 
 
 // Variables

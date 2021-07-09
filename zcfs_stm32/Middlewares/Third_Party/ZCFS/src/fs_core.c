@@ -23,24 +23,23 @@ uint32_t superblock_pointer_t = _VZCFS_DISK_SIZE  - sizeof(superblock_t);
 
 
 
-
-uint32_t get_inode_addr_to_wrt(uint32_t);
-uint32_t get_dinode_addr_to_wrt();
-
-void get_header(char *, uint32_t);
-HAL_StatusTypeDef virtual_flash_write(uint32_t* address, uint32_t data, uint32_t data_len);
-HAL_StatusTypeDef virtual_flash_read(uint32_t* address, uint32_t* data, uint32_t data_len);
-
-uint32_t create_packet(char*, uint32_t, uint32_t*, uint32_t, uint32_t);
-uint32_t create_packet_read(char* pkt, uint32_t* address_buffer, uint32_t data_len);
-
-HAL_StatusTypeDef inode_write(uint32_t id, char* name, uint32_t time, uint32_t size, uint8_t is_open, idfile_t* last_dinode, idfile_t* next_dinode);
-HAL_StatusTypeDef dinode_write(uint32_t fd, char* data, uint32_t data_len);
-HAL_StatusTypeDef data_write(char* data, uint32_t data_len);
-
-//ifile_t* inode_read(uint32_t fd);
-void dinode_read(uint32_t* address, idfile_t* dinode);
-void data_read(uint32_t* address, char* data, uint32_t data_len);
+//uint32_t get_inode_addr_to_wrt(uint32_t);
+//uint32_t get_dinode_addr_to_wrt();
+//
+//void get_header(char *, uint32_t);
+//HAL_StatusTypeDef virtual_flash_write(uint32_t* address, uint32_t data, uint32_t data_len);
+//HAL_StatusTypeDef virtual_flash_read(uint32_t* address, uint32_t* data, uint32_t data_len);
+//
+//uint32_t create_packet(char*, uint32_t, uint32_t*, uint32_t, uint32_t);
+//uint32_t create_packet_read(char* pkt, uint32_t* address_buffer, uint32_t data_len);
+//
+//HAL_StatusTypeDef inode_write(uint32_t id, char* name, uint32_t time, uint32_t size, uint8_t is_open, idfile_t* last_dinode, idfile_t* next_dinode);
+//HAL_StatusTypeDef dinode_write(uint32_t fd, char* data, uint32_t data_len);
+//HAL_StatusTypeDef data_write(char* data, uint32_t data_len);
+//
+////ifile_t* inode_read(uint32_t fd);
+//void dinode_read(uint32_t* address, idfile_t* dinode);
+//void data_read(uint32_t* address, char* data, uint32_t data_len);
 
 
 void update_superblock_metadata();
@@ -217,11 +216,7 @@ HAL_StatusTypeDef virtual_flash_read(uint32_t* address, uint32_t* data, uint32_t
 	 */
 //	for(int i=0; i<100000; i++);
 
-
-//	while(HAL_UART_Receive(gHuart, (uint8_t*)test, data_len, HAL_MAX_DELAY)!= HAL_OK){};
 	while(HAL_UART_Receive(gHuart, (uint8_t*)data, data_len, HAL_MAX_DELAY)!= HAL_OK){};
-
-//	memcpy(data, test, data_len);
 
 
 //	for(int i=0; i<100000; i++);
@@ -233,11 +228,11 @@ HAL_StatusTypeDef virtual_flash_read(uint32_t* address, uint32_t* data, uint32_t
 
 
 void dinode_read(uint32_t* address, idfile_t* dinode){
-	virtual_flash_read(address, (uint32_t*)dinode, sizeof(idfile_t));
+	virtual_flash_read(address, (uint32_t*)&dinode, sizeof(idfile_t));
 }
 
 void data_read(uint32_t* address, char* data, uint32_t data_len){
-	virtual_flash_read(address, (uint32_t*)data, data_len);
+	virtual_flash_read(address, (uint32_t*)&data, data_len);
 }
 
 
@@ -513,15 +508,24 @@ uint32_t fs_open(char* file_name){
 /*
  * User writes data into fs
  */
-HAL_StatusTypeDef fs_write(uint32_t fd, char* ptr, uint32_t len){
+uint32_t fs_write(uint32_t fd, char* ptr, uint32_t len){
 
-	// TODO Check fd!
-	HAL_StatusTypeDef hstatus = buffer_insert(mbuf, fd, ptr, len);
-	// TODO write the inode
+	uint32_t idx_fd_file = pending_fd_find(fd);
 
-	if (hstatus != HAL_OK)
-	  return EIO;
+	if(idx_fd_file != -1){
 
-	return len;
 
+		if(len > _BUFFER_SIZE){
+//			return fs_error("buffer: write too big");
+		}
+
+		HAL_StatusTypeDef hstatus = buffer_insert(mbuf, fd, ptr, len);
+
+		if (hstatus != HAL_OK)
+		  return EIO;
+
+		return len;
+	}
+
+	return -1;
 }

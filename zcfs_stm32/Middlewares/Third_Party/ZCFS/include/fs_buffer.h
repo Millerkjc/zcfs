@@ -12,11 +12,15 @@
 #ifndef INCLUDE_FS_BUFFER_H_
 #define INCLUDE_FS_BUFFER_H_
 
+#define _BUFFER_SIZE _BUFFER_SIZE_4K
+#define _FBUFFER_INIT_SIZE 12
+
+
 /*
  * Buffers: main buffer and buffer of the files
  */
 typedef struct __attribute__((__packed__)) buffer_file{
-	uint32_t id;		/* file identifier    		*/
+	uint32_t fd;		/* file identifier    		*/
 	char* file_buffer;	/* buffer of the file 		*/
 	uint32_t bfill;		/* buffer filled 			*/
 	uint32_t size;		/* size of the file buffer  */
@@ -44,7 +48,7 @@ typedef struct __attribute__((__packed__)) inode_buffer{
 void buffer_reset(main_buffer_t* mbuf);
 main_buffer_t* buffer_init(main_buffer_t* mbuf);
 void buffer_flush();
-HAL_StatusTypeDef buffer_insert(main_buffer_t* mbuf, uint32_t id, char *data, uint32_t len);
+HAL_StatusTypeDef buffer_insert(main_buffer_t* mbuf, uint32_t fd, char *data, uint32_t len);
 // file buffers
 void fbuffer_reset(file_buffer_t* fbuf);
 file_buffer_t* fbuffer_init(file_buffer_t* fbuf, uint32_t id);

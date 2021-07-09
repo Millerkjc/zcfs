@@ -12,7 +12,7 @@ void test_fbuf_init(){
 	  file_buffer_t *fbuf;
 	  fbuf = fbuffer_init(fbuf, i);
 
-	  uint32_t id = fbuf->id;
+	  uint32_t id = fbuf->fd;
 	  uint32_t x = fbuf->bfill;
 	  uint32_t y = fbuf->size;
 	  fbuf->file_buffer = "hello\0";
@@ -33,11 +33,11 @@ void test_fbuf_insert_flush(){
 	  fbuf = fbuffer_init(fbuf, 1);
 	  fbuffer_insert(fbuf, "test", 4);
 	  char s[30];
-	  sprintf(s, "%lu : %s", fbuf->id, fbuf->file_buffer);
+	  sprintf(s, "%lu : %s", fbuf->fd, fbuf->file_buffer);
 	  fbuffer_insert(fbuf, "test", 4);
 	  fbuffer_insert(fbuf, "test", 4);
 	  fbuffer_insert(fbuf, "test", 4);
-	  sprintf(s, "%lu : %s", fbuf->id, fbuf->file_buffer);
+	  sprintf(s, "%lu : %s", fbuf->fd, fbuf->file_buffer);
 
 	  //assert(strcmp(s, "1 : testtesttest"));
 

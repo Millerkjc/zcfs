@@ -15,8 +15,6 @@
  * All methods for buffering data, etc.
  */
 
-#define _BUFFER_SIZE _BUFFER_SIZE_4K
-#define _FBUFFER_INIT_SIZE 12
 
 /*
  * fbuffer reset
@@ -35,9 +33,9 @@ void fbuffer_reset(file_buffer_t* fbuf){
  * bfill: how many byte are in the buffer
  * size : the current size of the buffer
  */
-file_buffer_t* fbuffer_init(file_buffer_t* fbuf, uint32_t id){
+file_buffer_t* fbuffer_init(file_buffer_t* fbuf, uint32_t fd){
 	fbuf = malloc(sizeof(struct buffer_file));
-	fbuf->id = id;
+	fbuf->fd = fd;
 	fbuffer_reset(fbuf);
 	return fbuf;
 }
@@ -75,12 +73,22 @@ HAL_StatusTypeDef fbuffer_insert(file_buffer_t* fbuf, char *data, uint32_t len){
  * the data will be write in memory and the buffer cleared
  */
 void fbuffer_flush(file_buffer_t* fbuf){
-	// TODO write in mem
-	// TODO inode_write
 
-	free(&fbuf->file_buffer);
-	fbuf->file_buffer = NULL;
-	fbuffer_reset(fbuf);
+	if(fbuf){
+		// TODO write in mem
+		// TODO dinode_write
+
+		char* end = "\0";
+
+		strcat(fbuf->file_buffer, end);
+		dinode_write(fbuf->fd, fbuf->file_buffer, fbuf->bfill + 1);
+
+		free(&fbuf->file_buffer);
+		fbuf->file_buffer = NULL;
+//		fbuffer_reset(fbuf);
+//		free(fbuf);
+//		fbuf = NULL;
+	}
 }
 
 
@@ -111,11 +119,18 @@ main_buffer_t* buffer_init(main_buffer_t* mbuf){
  * mbuf: the main buffer
  */
 void buffer_flush(main_buffer_t* mbuf){
-	for(int b=0; b < mbuf->files; b++){
+	for(int b=2; b < _INODE_LIST_LIMIT; b++){
 		fbuffer_flush(mbuf->list[b]);
-		free(mbuf->list[b]);
+		if(mbuf->list[b]){
+			free(mbuf->list[b]);
+			mbuf->list[b] = NULL;
+		}
+//		memset(mbuf->list[b], 0, sizeof(file_buffer_t*));
 	}
-	buffer_reset(mbuf);
+
+//	buffer_reset(mbuf);
+	mbuf->files=0;
+	mbuf->size=0;
 }
 
 /*
@@ -124,25 +139,24 @@ void buffer_flush(main_buffer_t* mbuf){
  * id	: id of the file
  * data	: the data that will be inserted
  */
-HAL_StatusTypeDef buffer_insert(main_buffer_t* mbuf, uint32_t id, char *data, uint32_t len){
+HAL_StatusTypeDef buffer_insert(main_buffer_t* mbuf, uint32_t fd, char *data, uint32_t len){
 	if(mbuf->size + len >= _BUFFER_SIZE){
 		// Flush buffer
-		// TODO Flush buffer + write on mem
 		buffer_flush(mbuf);
 	}
 
 	/*
 	 * 	looking for fbuf into the list
 	 */
-	if (! mbuf->list[id]){ // or if mbuf->files <= id
+	if (! mbuf->list[fd]){ // or if mbuf->files <= id
 		mbuf->files += 1;
-		mbuf->list[id] = fbuffer_init(mbuf->list[id], id);
+		mbuf->list[fd] = fbuffer_init(mbuf->list[fd], fd);
 	}
 
 	/*
 	 * Insert the data in the buffer of the specific file
 	 */
-	fbuffer_insert(mbuf->list[id], data, len);
+	fbuffer_insert(mbuf->list[fd], data, len);
 	mbuf->size += len;
 
 	return HAL_OK;
