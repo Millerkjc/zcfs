@@ -31,7 +31,7 @@ typedef struct inode_file_data{
  */
 /* block per file: 4 + 16 + 4 + 4 + 1 + 4 = 33 byte */
 typedef struct __attribute__((__packed__)) inode_file{
-	uint32_t id;			 /* file identifier 	  */
+	uint32_t fd;			 /* file descriptor 	  */
 	char name[FNAME_LENGTH]; /* 15 + '\0' 			  */
 
 //	char* data_ptr;			 /* ptr to the file data  */

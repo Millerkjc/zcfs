@@ -37,7 +37,7 @@ HAL_StatusTypeDef virtual_flash_read(uint32_t* address, uint32_t* data, uint32_t
 void update_superblock_metadata();
 
 // Inode functions
-HAL_StatusTypeDef inode_write(uint32_t id, char* name, uint32_t time, uint32_t size, uint8_t is_open, idfile_t* last_dinode, idfile_t* next_dinode);
+uint32_t inode_write(char* name, uint32_t time, uint32_t size, uint8_t is_open, idfile_t* last_dinode, idfile_t* next_dinode);
 HAL_StatusTypeDef data_write(char* data, uint32_t data_len);
 uint32_t get_inode_addr_to_wrt(uint32_t);
 
@@ -201,8 +201,8 @@ void data_read(uint32_t* address, char* data, uint32_t data_len){
  * INODE
  */
 
-void set_ifile(ifile_t* ifile, uint32_t id, char* name, uint32_t time, uint32_t size, uint8_t is_open, idfile_t* last_dinode, idfile_t* next_dinode){
-	ifile->id = id;
+void set_ifile(ifile_t* ifile, uint32_t fd, char* name, uint32_t time, uint32_t size, uint8_t is_open, idfile_t* last_dinode, idfile_t* next_dinode){
+	ifile->fd = fd;
 	strncpy(ifile->name, name, FNAME_LENGTH);
 	ifile->time = time;
 	ifile->size = size;
@@ -212,21 +212,23 @@ void set_ifile(ifile_t* ifile, uint32_t id, char* name, uint32_t time, uint32_t 
 }
 
 
-HAL_StatusTypeDef inode_write(uint32_t id, char* name, uint32_t time, uint32_t size, uint8_t is_open, idfile_t* last_dinode, idfile_t* next_dinode){
+uint32_t inode_write(char* name, uint32_t time, uint32_t size, uint8_t is_open, idfile_t* last_dinode, idfile_t* next_dinode){
+	uint32_t fd_inode = superblock.next_fd;
+
 	// Write on RAM
-	set_ifile(&superblock.inode_list[id], id, name, time, size, is_open, last_dinode, next_dinode);
+	set_ifile(&superblock.inode_list[fd_inode], fd_inode, name, time, size, is_open, last_dinode, next_dinode);
 
 	// Write on disk
-	virtual_flash_write((uint32_t*)get_inode_addr_to_wrt(id), (uint32_t)&superblock.inode_list[id], sizeof(ifile_t));
+	virtual_flash_write((uint32_t*)get_inode_addr_to_wrt(fd_inode), (uint32_t)&superblock.inode_list[fd_inode], sizeof(ifile_t));
 
 	superblock.next_fd += 1;
 	update_superblock_metadata();
 
-	if(id >= 2){
-		pending_dinode_insert(&superblock.inode_list[id], NULL);
+	if(fd_inode >= 2){
+		pending_dinode_insert(&superblock.inode_list[fd_inode]);
 	}
 
-	return HAL_OK;
+	return fd_inode;
 }
 
 
@@ -267,7 +269,7 @@ HAL_StatusTypeDef dinode_write(uint32_t fd, char* data, uint32_t data_len){
 			virtual_flash_write((uint32_t*)superblock.inode_list[fd].last_dinode, (uint32_t)&old_dinode, sizeof(idfile_t));
 
 			/*
-			 * UPDATE INODE LAST DINODE ADDRESS
+			 * UPDATE INODE - LAST DINODE ADDRESS
 			 */
 			superblock.inode_list[fd].last_dinode = (idfile_t *)dinode_addr;
 			virtual_flash_write((uint32_t*)get_inode_addr_to_wrt(fd), (uint32_t)&superblock.inode_list[fd], sizeof(ifile_t));
@@ -305,17 +307,14 @@ void initialize_superblock(){
 
 	virtual_flash_write((uint32_t *)superblock_pointer_t, (uint32_t)&superblock, sizeof(uint32_t)*16);
 
-	inode_write(STDIN, "STDIN", 0, 0, 1, NULL, NULL);
-	inode_write(STDOUT, "STDOUT", 0, 0, 1, NULL, NULL);
+	inode_write("STDIN", 0, 0, 1, NULL, NULL);
+	inode_write("STDOUT", 0, 0, 1, NULL, NULL);
 
-	uint32_t fd_test = superblock.next_fd;
-	inode_write(fd_test, "wrt0", 42, 41, 1, NULL, NULL);
+	uint32_t fd_test = fs_open("wrt0");
 
-	uint32_t fd_test_2 = superblock.next_fd;
-	inode_write(fd_test_2, "test0", 42, 41, 1, NULL, NULL);
+	uint32_t fd_test_2 = fs_open("test0");
 
-	uint32_t fd_test_3 = superblock.next_fd;
-	inode_write(fd_test_3, "file3", 42, 41, 1, NULL, NULL);
+	uint32_t fd_test_3 = fs_open("file3");
 
 	char *s = "AAAAAAABBBBB";
 	char *s2 = "hello world";
@@ -345,6 +344,10 @@ void initialize_superblock(){
     buffer_flush(mbuf);
 
 
+    pending_fd_remove(fd_test_3);
+    linked_list_print(pbuffi->list_new_fd);
+
+
 
     /*
      * TODO
@@ -354,6 +357,7 @@ void initialize_superblock(){
      * - tests
      *
      * - relazione
+     * - virtual flash write on terminal
      * - ...
      */
 
@@ -391,7 +395,7 @@ void RetargetInit(UART_HandleTypeDef *huart, DMA_HandleTypeDef *hdma_usart_tx, D
 
 
 
-
+// TODO
 HAL_StatusTypeDef virtual_terminal_write(uint32_t data, uint32_t data_len){
 //	return create_packet(SERIAL_PKT, 0x0, data, data_len);
 	return HAL_OK;
@@ -412,12 +416,77 @@ void fs_init(UART_HandleTypeDef *huart, DMA_HandleTypeDef *hdma_usart_tx, DMA_Ha
 
 
 uint32_t fs_open(char* file_name){
+	uint32_t ptr = 2;
 
-	// TODO CALL _OPEN/OPEN
-	uint32_t fd = _open(file_name);
+	/*
+	 * check if file exists
+	 * if it exists and it is closed -> set is_open to 1 and update superblock
+	 * return fd
+	 */
+	while(ptr<superblock.next_fd){
+		ifile_t* inode = &superblock.inode_list[ptr];
 
-	// TODO allocate buffer, create superblock entry, inode, etc.
-	return fd;
+		if(!strncmp(inode->name, file_name, strlen(inode->name))){
+
+			// TODO - NEED TESTS
+
+			if(!inode->is_open){
+
+				/*
+				 * UPDATE INODE on disk
+				 */
+				inode->is_open = 1;
+				virtual_flash_write((uint32_t*)get_inode_addr_to_wrt(inode->fd), (uint32_t)inode, sizeof(ifile_t));
+
+				/*
+				 * insert file in pending list
+				 */
+				pending_dinode_insert(inode);
+			}
+
+			return inode->fd;
+		}
+
+		ptr++;
+	}
+
+
+	return inode_write(file_name, 0, 0, 1, NULL, NULL);
+}
+
+
+
+HAL_StatusTypeDef fs_close(uint32_t fd){
+	// TODO remove fd from pending buffer
+	// TODO
+
+	if (fd <= STDOUT || fd >= superblock.next_fd){
+		char* msg_error = "";
+		sprintf(msg_error, "Cannot close the following file descriptor: %lu\r\n", fd);
+		fs_error(msg_error);
+		return HAL_ERROR;
+	}
+
+
+	/*
+	 * If file not in the pending list
+	 */
+	uint32_t idx_fd_file = pending_fd_find(fd);
+	if(idx_fd_file != -1){
+		char* msg = "The current file is just closed\r\n";
+		fs_write(STDOUT, msg, strlen(msg));
+		return HAL_OK;
+	}
+
+	ifile_t* inode = &superblock.inode_list[fd];
+
+	/*
+	 * UPDATE INODE on disk
+	 */
+	inode->is_open = 0;
+	virtual_flash_write((uint32_t*)get_inode_addr_to_wrt(inode->fd), (uint32_t)inode, sizeof(ifile_t));
+
+	return HAL_OK;
 }
 
 
@@ -426,13 +495,22 @@ uint32_t fs_open(char* file_name){
  */
 uint32_t fs_write(uint32_t fd, char* ptr, uint32_t len){
 
+	if(fd == STDIN){
+		return fs_error("Cannot write on file descriptor STDIN\r\n");
+	}
+
+	if (fd == STDOUT){
+		virtual_terminal_write((uint32_t)ptr, len);
+		return len;
+	}
+
 	uint32_t idx_fd_file = pending_fd_find(fd);
 
 	if(idx_fd_file != -1){
 
 
 		if(len > _BUFFER_SIZE){
-			return fs_error("buffer: write too big");
+			return fs_error("buffer: write too big\r\n");
 		}
 
 		HAL_StatusTypeDef hstatus = buffer_insert(mbuf, fd, ptr, len);
@@ -448,9 +526,7 @@ uint32_t fs_write(uint32_t fd, char* ptr, uint32_t len){
 
 
 uint32_t fs_error(char* error_msg){
-	// TODO Create error pkt and send through USART
-
-	return -1;
+	return fs_write(STDOUT, error_msg, strlen(error_msg));
 }
 
 

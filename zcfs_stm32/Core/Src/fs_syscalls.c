@@ -17,10 +17,6 @@
 #include <stdio.h>
 #include "fs_syscalls.h"
 
-#define STDIN_FILENO  0
-#define STDOUT_FILENO 1
-#define STDERR_FILENO 2
-
 uint32_t find_file(char* file_name);
 uint32_t create_file(char* file_name);
 
@@ -82,58 +78,47 @@ return len;
 //void data_write(char* data, uint32_t data_len);
 
 int _write(int fd, char* ptr, int len) {
-  HAL_StatusTypeDef hstatus;
-
-  if (fd == STDOUT_FILENO || fd == STDERR_FILENO) {
-    hstatus = HAL_UART_Transmit(gHuart, (uint8_t *) ptr, len, HAL_MAX_DELAY);
-    if (hstatus == HAL_OK)
-      return len;
-    else
-      return EIO;
-  }
-
-  if (fd != STDOUT_FILENO && fd != STDERR_FILENO && fd != STDIN_FILENO){
-	  return fs_write(fd, ptr, len);
-  }
-
-  errno = EBADF;
-  return -1;
+  return fs_write(fd, ptr, len);
 }
 
 int _open(char* file_name)
 {
 
-	int fd = find_file(file_name);
+	return fs_open(file_name);
 
-	// File not exists
-	if (fd == -1){
-		/*
-		 * Create file
-		 * - create inode
-		 * - insert into the superblock
-		 * - insert inode into pending_list (open files)
-		 */
-		create_file(file_name);
-		// TODO redefine fd -> generate fd
-		// TODO call _open((uint32_t)fd, 3); // open file in write/read
-								   	   	     // returns 1 success/0 fail
-	}
 
-	/*
-	 * if existing file was closed
-	 * TODO MUST read from disk
-	 */
-//	if (!superblock.inode_list[fd]->is_open){
-//		superblock.inode_list[fd]->is_open = 1;
 
-		/*
-		 * reinsert into pending_list (open files)
-		 */
-		// Insert Inode
-		// Insert last data TODO - until next_dinode = NULL
+//	int fd = find_file(file_name);
+//
+//	// File not exists
+//	if (fd == -1){
+//		/*
+//		 * Create file
+//		 * - create inode
+//		 * - insert into the superblock
+//		 * - insert inode into pending_list (open files)
+//		 */
+//		create_file(file_name);
+//		// TODO redefine fd -> generate fd
+//		// TODO call _open((uint32_t)fd, 3); // open file in write/read
+//								   	   	     // returns 1 success/0 fail
 //	}
-
-	return (uint32_t)fd;
+//
+//	/*
+//	 * if existing file was closed
+//	 * TODO MUST read from disk
+//	 */
+////	if (!superblock.inode_list[fd]->is_open){
+////		superblock.inode_list[fd]->is_open = 1;
+//
+//		/*
+//		 * reinsert into pending_list (open files)
+//		 */
+//		// Insert Inode
+//		// Insert last data TODO - until next_dinode = NULL
+////	}
+//
+//	return (uint32_t)fd;
 
 
 }
