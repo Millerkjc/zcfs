@@ -235,7 +235,7 @@ uint32_t linked_list_find_fd(linked_list_t *list, int fd){
 	list_item_t *current = list->head;
 	uint32_t pos = 0;
 
-	while(current != NULL && *(uint32_t*)current->data != fd){
+	while(current != NULL && (uint32_t)current->data != fd){
 		pos+=1;
 		current = current->next;
 	}
