@@ -119,7 +119,7 @@ main_buffer_t* buffer_init(main_buffer_t* mbuf){
  * mbuf: the main buffer
  */
 void buffer_flush(main_buffer_t* mbuf){
-	for(int b=2; b < _INODE_LIST_LIMIT; b++){
+	for(int b=2; b < superblock.next_fd; b++){
 		fbuffer_flush(mbuf->list[b]);
 		if(mbuf->list[b]){
 			free((uint32_t *)mbuf->list[b]);
@@ -172,13 +172,12 @@ pending_buffer_t* pending_buffer_init(){
 	return pbuffi;
 }
 
-HAL_StatusTypeDef pending_dinode_insert(ifile_t* list_new_inode, uint32_t* last_inode_data){
+HAL_StatusTypeDef pending_dinode_insert(ifile_t* list_new_inode){
 	/*
 	 * se c'è fd e last_dinode NULL -> aggiungere next_dinode all'ifile (INODE)
 	 */
 
-	linked_list_append(pbuffi->list_new_fd, &list_new_inode->id);
-//	linked_list_append(pbuffi->last_dinode, &last_inode_data);
+	linked_list_append(pbuffi->list_new_fd, (uint32_t *)list_new_inode->fd);
 
 	return HAL_OK;
 }
@@ -189,6 +188,14 @@ HAL_StatusTypeDef pending_dinode_insert(ifile_t* list_new_inode, uint32_t* last_
 uint32_t pending_fd_find(uint32_t fd){
 	return linked_list_find_fd(pbuffi->list_new_fd, fd);
 }
+
+
+
+void pending_fd_remove(uint32_t fd){
+	linked_list_remove_fd(pbuffi->list_new_fd, fd);
+}
+
+
 
 ///*
 // * return NULL quando file non è stato trovato
@@ -224,7 +231,7 @@ uint32_t pending_fd_find(uint32_t fd){
 
 
 
-int linked_list_find_fd(linked_list_t *list, int fd){
+uint32_t linked_list_find_fd(linked_list_t *list, int fd){
 	list_item_t *current = list->head;
 	uint32_t pos = 0;
 
@@ -240,6 +247,33 @@ int linked_list_find_fd(linked_list_t *list, int fd){
 	return pos;
 }
 
+
+
+void linked_list_remove_fd(linked_list_t *list, int fd){
+	list_item_t *prev = NULL;
+	list_item_t *cur = list->head;
+
+	while(cur!=NULL && (uint32_t)cur->data != fd){
+		prev = cur;
+		cur = cur->next;
+	}
+
+	if(cur == NULL){
+		return;
+	}
+
+	if(prev == NULL){
+		list->head = list->head->next;
+	}else{
+		prev->next = cur->next;
+
+		if (prev->next == NULL){
+			list->tail = prev;
+		}
+	}
+
+	free(cur);
+}
 
 
 

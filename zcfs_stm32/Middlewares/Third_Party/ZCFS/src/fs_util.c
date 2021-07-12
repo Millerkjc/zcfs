@@ -18,7 +18,7 @@ void linked_list_init(linked_list_t *list){
 	list->size = 0;
 }
 
-void linked_list_append(linked_list_t *list, void *item){
+void linked_list_append(linked_list_t *list, void* item){
 	list_item_t *new_item = (list_item_t *)malloc(sizeof(list_item_t));
 
 	if(list->tail == NULL){
@@ -29,6 +29,7 @@ void linked_list_append(linked_list_t *list, void *item){
 		list->tail = list->tail->next;
 	}
 
+	// TODO TEST
 	new_item->next = NULL;
 	new_item->data = item;
 
@@ -105,7 +106,7 @@ void linked_list_print(linked_list_t *list){
 	while(new_item != NULL){
 		char s[10];
 		memset(s, 0, 10);
-		sprintf(s, "%ld", *(uint32_t *)new_item->data);
+		sprintf(s, "%ld", (uint32_t)new_item->data);
 		strcat(all, s);
 		new_item = new_item->next;
 	}
