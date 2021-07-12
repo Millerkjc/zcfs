@@ -114,7 +114,7 @@ def write_to_disk(address, data):
 
 def print_disk(starts=0, ends=disk_size, p_disk_size=4, hx=0):
     for address in range(starts, ends, p_disk_size):
-        print(('0x{:03x}: ' + ' {:02x}'*p_disk_size + (' | ' + '{:c}'*p_disk_size)*hx).format(address, *[ord(disk[idx]) for idx in range(address, address+p_disk_size)], *[ord(disk[idx]) if chr(ord(disk[idx])).isprintable() else 46 for idx in range(address, address+p_disk_size)]))
+        print(('0x{:08x}: ' + ' {:02x}'*p_disk_size + (' | ' + '{:c}'*p_disk_size)*hx).format(address, *[ord(disk[idx]) for idx in range(address, address+p_disk_size)], *[ord(disk[idx]) if chr(ord(disk[idx])).isprintable() else 46 for idx in range(address, address+p_disk_size)]))
         ## 46  == '.'
         
 
