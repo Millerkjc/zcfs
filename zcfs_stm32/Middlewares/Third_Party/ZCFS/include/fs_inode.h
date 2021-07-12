@@ -21,8 +21,9 @@
  */
 //typedef struct __attribute__((__packed__)) inode_file_data{
 typedef struct inode_file_data{
-	uint32_t data_ptr;			/* ptr to the file data  */
-	uint32_t next_dinode;    /* next inode	         */
+	uint32_t data_ptr;			/* ptr to the file data  	  */
+	uint32_t data_len;			/* length of the pointed data */
+	uint32_t next_dinode;    	/* next inode	              */
 } idfile_t;
 
 /*

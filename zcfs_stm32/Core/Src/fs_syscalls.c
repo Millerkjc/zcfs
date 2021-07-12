@@ -21,6 +21,9 @@
 #define STDOUT_FILENO 1
 #define STDERR_FILENO 2
 
+uint32_t find_file(char* file_name);
+uint32_t create_file(char* file_name);
+
 
 uint32_t find_file(char* file_name){
 	int ptr = 2;

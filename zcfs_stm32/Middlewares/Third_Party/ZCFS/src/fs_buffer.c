@@ -78,10 +78,10 @@ void fbuffer_flush(file_buffer_t* fbuf){
 		// TODO write in mem
 		// TODO dinode_write
 
-		char* end = "\0";
+		//char* end = "\0";
 
-		strcat(fbuf->file_buffer, end);
-		dinode_write(fbuf->fd, fbuf->file_buffer, fbuf->bfill + 1);
+		//strcat(fbuf->file_buffer, end);
+		dinode_write(fbuf->fd, fbuf->file_buffer, fbuf->bfill);
 
 		free(fbuf->file_buffer);
 //		fbuf->file_buffer = NULL;

@@ -298,7 +298,7 @@ if __name__ == '__main__':
             print('DATA')
             print_data()
             print('DINODE')
-            print_dinode()
+            print_dinode(12)
             print_superblock(256)
             
     except Exception as e:
