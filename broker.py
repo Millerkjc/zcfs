@@ -13,7 +13,6 @@ eol_pkt = b'_end'
 eol_size = len(eol_pkt)
 
 # disk variables
-#disk_size = 1024 * 10  # 5 MB
 disk_size = 1024 * 1024 * 5 # 5 MB
 disk = [b'\x00'] * disk_size
 superblock_address_5MB = 0x4f6bf4

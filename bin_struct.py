@@ -17,7 +17,8 @@ class pure_data:
 class dinode:
     def __init__(self, raw_dinode):
         self.data_ptr = raw_dinode[:4]
-        self.next_dinode = raw_dinode[4:]
+        self.data_len = raw_dinode[4:8]
+        self.next_dinode = raw_dinode[8:]
 
     def get_data_ptr_pretty_str(self):
         return '0x{:08x}'.format(struct.unpack('<i', self.data_ptr)[0])
@@ -42,8 +43,11 @@ class inode:
     def __str__(self):
         return introspect(self)
 
+class superblock:
+    def __init__(self, address):
+        self.address = address
 
-a = b''.join(list(map(lambda x: bytes([int(x,16)]), '37 00 00 00 bc 6b 4f 00'.split(' '))))
+a = b''.join(list(map(lambda x: bytes([int(x,16)]), '22 00 00 00 12 00 00 00 ac 6b 4f 00'.split(' '))))
 print(a)
 
 d = dinode(a)

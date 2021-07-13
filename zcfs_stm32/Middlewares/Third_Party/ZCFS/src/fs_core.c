@@ -322,6 +322,9 @@ void initialize_superblock(){
 
 	uint32_t fd_test_3 = fs_open("file3");
 
+	uint32_t fd_mamma = fs_open("mamma");
+
+
 	char *s = "AAAAAAABBBBB";
 	char *s2 = "hello world";
     char *s3 = "secondo file RULES";
@@ -340,41 +343,73 @@ void initialize_superblock(){
     buffer_flush(mbuf);
 
 
+
+	char *s_ = "da tommy: ";
+    fs_write(fd_mamma, s_, strlen(s_));
+    buffer_flush(mbuf);
+
+	char *s_0 = "ciao mamma";
+    fs_write(fd_mamma, s_0, strlen(s_0));
+    buffer_flush(mbuf);
+
+    char *s_1 = "vado a prendere il latte";
+    fs_write(fd_mamma, s_1, strlen(s_1));
+    buffer_flush(mbuf);
+
+	char *s_11 = " al mercatino dell'altra cittadella";
+    fs_write(fd_mamma, s_11, strlen(s_11));
+    buffer_flush(mbuf);
+
+    char *s_2 = ".... e spari";
+    fs_write(fd_mamma, s_2, strlen(s_2));
+    buffer_flush(mbuf);
+
+    char *s_3 = "cose a caso";
+    fs_write(fd_mamma, s_3, strlen(s_3));
+    buffer_flush(mbuf);
+
+
+    char *data = malloc(100);
+    memset(data, 0, 100);
+    fs_read(fd_mamma, data, strlen(s_) + strlen(s_0) + 7, strlen(s_) + strlen(s_0) + strlen(s_1) + strlen(s_11) + 6);
+
+
+
 //    pending_fd_remove(fd_test_3);
 //    linked_list_print(pbuffi->list_new_fd);
 
-    // TODO virtual terminal
-    fs_close(fd_test_3);
+    // TODO virtual terminal + test open
+//    fs_close(fd_test_3);
 //    linked_list_print(pbuffi->list_new_fd);
 
 
+//    char *data = malloc(100);
+//    memset(data, 0, 100);
+//    fs_read(fd_test, data, 0, strlen(s) + strlen(s2) + strlen(s));
+//
+//    memset(data, 0, 100);
+//    fs_read(fd_test, data, strlen(s), strlen(s2));
+//
+//    memset(data, 0, 100);
+//    fs_read(fd_test_3, data, strlen(s4), strlen(s4)+1);
+
+
+    int a = 0;
+
+    if(a == 0){
+    	a = 2;
+    }
 
     /*
      * TODO
      * - read (sia su fs che su python)
-     * - timer
+     * - timer - buffer flush
      * - tests
      *
      * - relazione
      * - virtual flash write on terminal
      * - ...
      */
-
-
-
-
-
-
-//	char s3[sizeof(uint32_t)*16];
-//	virtual_flash_read((uint32_t *)superblock_pointer_t, (uint32_t*)s3, sizeof(uint32_t)*16);
-
-
-
-
-
-
-
-//	virtual_flash_write((uint32_t *)superblock_pointer_t, (uint32_t)&superblock, sizeof(superblock_t), 50);
 
 }
 
@@ -491,14 +526,13 @@ HAL_StatusTypeDef fs_close(uint32_t fd){
 }
 
 
-uint32_t fs_read(uint32_t fd, uint32_t start, uint32_t stop){
+uint32_t fs_read(uint32_t fd, char *data, int start, int stop){
 	if (fd <= STDOUT || fd >= superblock.next_fd){
 		char* msg_error = "";
 		sprintf(msg_error, "Cannot read the following file descriptor: %lu\r\n", fd);
 		fs_error(msg_error);
 		return HAL_ERROR;
 	}
-
 
 	/*
 	 * If file not in the pending list
@@ -511,10 +545,75 @@ uint32_t fs_read(uint32_t fd, uint32_t start, uint32_t stop){
 	}
 
 
-//	ifile_t* inode = &superblock.inode_list[fd];
-	// TODO TO IMPLEMENT
+	ifile_t* inode = &superblock.inode_list[fd];
 
-	return 1;
+	if (start > inode->size || stop > inode->size){
+		char* msg_error = "";
+		sprintf(msg_error, "Read file: out of bound\r\n");
+		fs_error(msg_error);
+		return HAL_ERROR;
+	}
+
+
+//	data = malloc(sizeof(char) * (stop - start));
+//	memset(data, 0, sizeof(char)*(stop - start));
+
+	uint32_t idx_data = 0;
+
+	idfile_t dinode;
+	uint32_t old_dinode;
+	dinode_read((uint32_t*)inode->next_dinode, (uint32_t*)&dinode);
+
+	do{
+
+		if ((start - (int)dinode.data_len) < 0){
+
+			char tmp[dinode.data_len];
+			data_read((uint32_t*)dinode.data_ptr, tmp, dinode.data_len);
+
+
+			uint32_t read_chunk_start;
+			uint32_t read_chunk_until;
+
+			/*
+			 * Set the ptr where to start reading from the tmp array
+			 * 0 	  if start < 0
+			 * start  else
+			 */
+			if (start < 0){
+				read_chunk_start = 0;
+			}else{
+				read_chunk_start = start;
+			}
+
+			/*
+			 * Set the ptr where to end readind from the tmp array
+			 * data_len 	 if stop > data_len
+			 * stop  		 else
+			 */
+			if (stop > (int)dinode.data_len){
+				read_chunk_until = dinode.data_len - read_chunk_start;
+			}else{
+				read_chunk_until = stop;
+			}
+
+			memcpy(&data[idx_data], &tmp[read_chunk_start], read_chunk_until);
+
+			idx_data += read_chunk_until;
+		}
+
+		start -= (int)dinode.data_len;
+		stop -= (int)dinode.data_len;
+
+		old_dinode = dinode.next_dinode;
+
+		if (dinode.next_dinode != (uint32_t)NULL && stop > 0){
+			dinode_read((uint32_t*)dinode.next_dinode, (uint32_t*)&dinode);
+		}
+	}while(old_dinode != (uint32_t)NULL && stop > 0);
+
+
+	return (uint32_t)(stop - start);
 }
 
 
