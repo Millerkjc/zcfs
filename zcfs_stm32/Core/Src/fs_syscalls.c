@@ -83,44 +83,7 @@ int _write(int fd, char* ptr, int len) {
 
 int _open(char* file_name)
 {
-
 	return fs_open(file_name);
-
-
-
-//	int fd = find_file(file_name);
-//
-//	// File not exists
-//	if (fd == -1){
-//		/*
-//		 * Create file
-//		 * - create inode
-//		 * - insert into the superblock
-//		 * - insert inode into pending_list (open files)
-//		 */
-//		create_file(file_name);
-//		// TODO redefine fd -> generate fd
-//		// TODO call _open((uint32_t)fd, 3); // open file in write/read
-//								   	   	     // returns 1 success/0 fail
-//	}
-//
-//	/*
-//	 * if existing file was closed
-//	 * TODO MUST read from disk
-//	 */
-////	if (!superblock.inode_list[fd]->is_open){
-////		superblock.inode_list[fd]->is_open = 1;
-//
-//		/*
-//		 * reinsert into pending_list (open files)
-//		 */
-//		// Insert Inode
-//		// Insert last data TODO - until next_dinode = NULL
-////	}
-//
-//	return (uint32_t)fd;
-
-
 }
 
 int _close(int file)

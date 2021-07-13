@@ -30,9 +30,9 @@
 void fs_init(UART_HandleTypeDef *huart, DMA_HandleTypeDef *hdma_usart_tx, DMA_HandleTypeDef *hdma_usart_rx);
 uint32_t fs_open(char* file_name);
 HAL_StatusTypeDef fs_close(uint32_t fd);
+uint32_t fs_read(uint32_t fd, uint32_t start, uint32_t stop);
 uint32_t fs_write(uint32_t fd, char* ptr, uint32_t len);
 uint32_t fs_error(char* error_msg);
-//HAL_StatusTypeDef fs_read(int fd, char* ptr, int len);
 
 /*
  * Dinode function (used in fs_buffer)

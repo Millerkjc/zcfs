@@ -256,6 +256,8 @@ HAL_StatusTypeDef dinode_write(uint32_t fd, char* data, uint32_t data_len){
 			 */
 			superblock.inode_list[fd].next_dinode = (idfile_t *)dinode_addr;
 			superblock.inode_list[fd].last_dinode = (idfile_t *)dinode_addr;
+			superblock.inode_list[fd].size = data_len;
+			superblock.inode_list[fd].time = HAL_GetTick();
 			virtual_flash_write((uint32_t*)get_inode_addr_to_wrt(fd), (uint32_t)&superblock.inode_list[fd], sizeof(ifile_t));
 
 		}else{
@@ -272,6 +274,8 @@ HAL_StatusTypeDef dinode_write(uint32_t fd, char* data, uint32_t data_len){
 			 * UPDATE INODE - LAST DINODE ADDRESS
 			 */
 			superblock.inode_list[fd].last_dinode = (idfile_t *)dinode_addr;
+			superblock.inode_list[fd].size += data_len;
+			superblock.inode_list[fd].time = HAL_GetTick();
 			virtual_flash_write((uint32_t*)get_inode_addr_to_wrt(fd), (uint32_t)&superblock.inode_list[fd], sizeof(ifile_t));
 
 		}
@@ -304,11 +308,13 @@ void initialize_superblock(){
 	superblock.ptr_data_address = _VZCFS_DISK_START;
 	superblock.ptr_dinode_address = superblock_pointer_t;
 
-
 	virtual_flash_write((uint32_t *)superblock_pointer_t, (uint32_t)&superblock, sizeof(uint32_t)*16);
 
 	inode_write("STDIN", 0, 0, 1, NULL, NULL);
 	inode_write("STDOUT", 0, 0, 1, NULL, NULL);
+
+
+
 
 	uint32_t fd_test = fs_open("wrt0");
 
@@ -320,16 +326,6 @@ void initialize_superblock(){
 	char *s2 = "hello world";
     char *s3 = "secondo file RULES";
     char *s4 = "TRIIIIIIIII";
-
-
-//	dinode_write(fd_test, s, strlen(s)+1);
-//	dinode_write(fd_test_2, s2, strlen(s2)+1);
-//	dinode_write(fd_test_3, s3, strlen(s3)+1);
-//	dinode_write(fd_test, s, strlen(s2)+1);
-//	dinode_write(fd_test_2, s2, strlen(s2)+1);
-//	dinode_write(fd_test_3, s3, strlen(s3)+1);
-//	dinode_write(fd_test_3, s3, strlen(s3)+1);
-
 
     fs_write(fd_test, s, strlen(s));
     fs_write(fd_test, s2, strlen(s2));
@@ -344,14 +340,17 @@ void initialize_superblock(){
     buffer_flush(mbuf);
 
 
-    pending_fd_remove(fd_test_3);
-    linked_list_print(pbuffi->list_new_fd);
+//    pending_fd_remove(fd_test_3);
+//    linked_list_print(pbuffi->list_new_fd);
+
+    // TODO virtual terminal
+    fs_close(fd_test_3);
+//    linked_list_print(pbuffi->list_new_fd);
 
 
 
     /*
      * TODO
-     * - open
      * - read (sia su fs che su python)
      * - timer
      * - tests
@@ -472,7 +471,7 @@ HAL_StatusTypeDef fs_close(uint32_t fd){
 	 * If file not in the pending list
 	 */
 	uint32_t idx_fd_file = pending_fd_find(fd);
-	if(idx_fd_file != -1){
+	if(idx_fd_file == -1){
 		char* msg = "The current file is just closed\r\n";
 		fs_write(STDOUT, msg, strlen(msg));
 		return HAL_OK;
@@ -484,9 +483,38 @@ HAL_StatusTypeDef fs_close(uint32_t fd){
 	 * UPDATE INODE on disk
 	 */
 	inode->is_open = 0;
-	virtual_flash_write((uint32_t*)get_inode_addr_to_wrt(inode->fd), (uint32_t)inode, sizeof(ifile_t));
+	virtual_flash_write((uint32_t*)get_inode_addr_to_wrt(inode->fd), (uint32_t)&superblock.inode_list[fd], sizeof(ifile_t));
+
+	pending_fd_remove(inode->fd);
 
 	return HAL_OK;
+}
+
+
+uint32_t fs_read(uint32_t fd, uint32_t start, uint32_t stop){
+	if (fd <= STDOUT || fd >= superblock.next_fd){
+		char* msg_error = "";
+		sprintf(msg_error, "Cannot read the following file descriptor: %lu\r\n", fd);
+		fs_error(msg_error);
+		return HAL_ERROR;
+	}
+
+
+	/*
+	 * If file not in the pending list
+	 */
+	uint32_t idx_fd_file = pending_fd_find(fd);
+	if(idx_fd_file == -1){
+		char* msg = "The current file is closed\r\n";
+		fs_write(STDOUT, msg, strlen(msg));
+		return HAL_OK;
+	}
+
+
+//	ifile_t* inode = &superblock.inode_list[fd];
+	// TODO TO IMPLEMENT
+
+	return 1;
 }
 
 
