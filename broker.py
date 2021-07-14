@@ -4,7 +4,7 @@ import sys, os
 import argparse, datetime, serial, signal
 
 # system variables
-base_dir = '~/zcfs_logs/'
+base_dir = './zcfs_logs/'
 
 # pkt variables
 header_size = 9
@@ -145,11 +145,15 @@ def print_data(p_disk_size=8):
 def clean_shutdown():
     print('Start performing clean shutdown...')
     # TODO
+    # dump all fs on a file
+    # dump_disk()
     print('End...')
 
 def dump_disk():
     # Save disk in the host
-    pass
+    f = open(base_dir + datetime.datetime.now().strftime("%Y%m%d_%H%M%S") + '.zcfs', 'wb')
+    f.write(b''.join(disk))
+    f.close()
 
 
 
@@ -204,6 +208,8 @@ def write_to_file(f, addr, data):
     f.write(data)
 
 
+def dump_all():
+    pass
 
 
 
