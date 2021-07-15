@@ -141,10 +141,21 @@ int main(void)
 //  buffer_flush(mbuf);
 
 
-  HAL_Delay(5000);
-  fs_write(fd_mamma, s_, strlen(s_));
+  HAL_Delay(2000);
+  //for(int i=0; i<2000000; i++);
   fs_write(fd_mamma, s_, strlen(s_));
 
+  HAL_Delay(2000);
+//  for(int i=0; i<2000000; i++);
+  fs_write(fd_mamma, s_, strlen(s_));
+
+  HAL_Delay(2000);
+//  for(int i=0; i<2000000; i++);
+  char *nuova = "nuova";
+  char *xyz = "xyzzx";
+  zcfs_write(fd_test_2, nuova, strlen(nuova));
+  zcfs_write(fd_test_3, xyz, strlen(xyz));
+  zcfs_write(fd_test_3, nuova, strlen(nuova));
 
 
   /* USER CODE END 2 */
@@ -238,6 +249,9 @@ static void MX_TIM6_Init(void)
   }
   /* USER CODE BEGIN TIM6_Init 2 */
 
+//   HAL_NVIC_SetPriority(TIM6_DAC_IRQn, 2, 0); //Enable the peripheral IRQ
+//   HAL_NVIC_EnableIRQ(TIM6_DAC_IRQn);
+
   /* USER CODE END TIM6_Init 2 */
 
 }
@@ -330,9 +344,10 @@ void HAL_TIM_PeriodElapsedCallback(TIM_HandleTypeDef *htim) {
   // This callback is automatically called by the HAL on the UEV event
   if(htim->Instance == TIM6){
     HAL_TIM_Base_Stop_IT(htim);
-//    htim->hdma
+
     HAL_GPIO_TogglePin(GPIOD, GPIO_PIN_14);
     buffer_flush(mbuf);
+    HAL_GPIO_TogglePin(GPIOD, GPIO_PIN_12);
 
 //    char s[30] = "ciao loop";
 //    virtual_flash_write(0, (uint32_t)s, 12);

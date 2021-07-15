@@ -119,16 +119,18 @@ main_buffer_t* buffer_init(main_buffer_t* mbuf){
  * mbuf: the main buffer
  */
 void buffer_flush(main_buffer_t* mbuf){
-	for(int b=2; b < superblock.next_fd; b++){
-		fbuffer_flush(mbuf->list[b]);
-		if(mbuf->list[b]){
-			free((uint32_t *)mbuf->list[b]);
-			mbuf->list[b] = NULL;
+	if(mbuf->size != 0){
+		for(int b=2; b < superblock.next_fd; b++){
+			fbuffer_flush(mbuf->list[b]);
+			if(mbuf->list[b]){
+				free((uint32_t *)mbuf->list[b]);
+				mbuf->list[b] = NULL;
+			}
 		}
-	}
 
-	mbuf->files=0;
-	mbuf->size=0;
+		mbuf->files=0;
+		mbuf->size=0;
+	}
 }
 
 /*
