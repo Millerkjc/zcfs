@@ -105,55 +105,46 @@ int main(void)
   /* USER CODE BEGIN 2 */
 
 
-//  fs_init(&huart2, &hdma_usart2_tx, &hdma_usart2_rx);
 
-
-
-
-  // TODO
   zcfs_init(&huart2, &hdma_usart2_tx, &hdma_usart2_rx);
 
-
-//  gHuart->Instance->CR3 |= USART_CR3_DMAT;
-
-//  HAL_DMA_Start_IT(&hdma_usart2_tx, (uint32_t)msg, (uint32_t)&huart2.Instance->DR, strlen(msg));
+  HAL_TIM_Base_Init(&htim6);
+  HAL_TIM_Base_Start_IT(&htim6); //Start the timer
 
 
-//  write(34, "test_write", 11);
+  char *s = "AAAAAAABBBBB";
+  char *s2 = "hello world";
+  char *s3 = "secondo file RULES";
+  char *s4 = "TRIIIIIIIII";
 
 
-//  RCC->AHB1ENR |= RCC_AHB1ENR_DMA2EN; // Enable DMA2 clock
-
-  // Initialize the test data
-//  for (int i = 0; i < MEMSIZE; ++i) {
-//	  source[i] = i;
-//  }
-
-//  int len = 6;
-//  char source[32] = "hello";
-////  char dest[32] = "prova";
-//  uint32_t dest = 0x08041000;
+  uint32_t fd_test = zcfs_open("wrt0");
+  uint32_t fd_test_2 = zcfs_open("test0");
+  uint32_t fd_test_3 = zcfs_open("file3");
+  uint32_t fd_mamma = zcfs_open("mamm");
 
 
+  zcfs_write(fd_test, s, strlen(s));
+  zcfs_write(fd_test, s2, strlen(s2));
+  zcfs_write(fd_test_2, s2, strlen(s2));
+//  buffer_flush(mbuf);
+  zcfs_write(fd_test_2, s3, strlen(s3));
+  zcfs_write(fd_test_3, s4, strlen(s4));
+//  buffer_flush(mbuf);
+  zcfs_write(fd_test, s, strlen(s));
+  zcfs_write(fd_test_2, s3, strlen(s3));
+  zcfs_write(fd_test_3, s4, strlen(s4));
+//  buffer_flush(mbuf);
 
-//  int idx = 0;
-//  open(idx, 3);
-//  flash_write(dest, (uint32_t)msg, strlen(msg));
-
-//	char msg[30] = "hello";
-
-  // DMA initialization (Interrupt mode)
-//  HAL_DMA_Start_IT(&hdma_usart2_tx, (uint32_t)msg, (uint32_t)&huart2.Instance->DR, strlen(msg));
-  // Enable UART in DMA mode
-//  huart2.Instance->CR3 |= USART_CR3_DMAT;
+  char *s_ = "da tommy: ";
+  fs_write(fd_mamma, s_, strlen(s_));
+//  buffer_flush(mbuf);
 
 
-  /*
-   * TESTS
-   */
-//  test_fbuf_init();
-//  test_fbuf_insert_flush();
-//  test_mbuf_init_insert();
+  HAL_Delay(5000);
+  fs_write(fd_mamma, s_, strlen(s_));
+  fs_write(fd_mamma, s_, strlen(s_));
+
 
 
   /* USER CODE END 2 */
@@ -329,6 +320,32 @@ static void MX_GPIO_Init(void)
 }
 
 /* USER CODE BEGIN 4 */
+
+void TIM6_IRQHandler(void) {
+  // Pass the control to HAL, which processes the IRQ
+  HAL_TIM_IRQHandler(&htim6);
+}
+
+void HAL_TIM_PeriodElapsedCallback(TIM_HandleTypeDef *htim) {
+  // This callback is automatically called by the HAL on the UEV event
+  if(htim->Instance == TIM6){
+    HAL_TIM_Base_Stop_IT(htim);
+//    htim->hdma
+    HAL_GPIO_TogglePin(GPIOD, GPIO_PIN_14);
+    buffer_flush(mbuf);
+
+//    char s[30] = "ciao loop";
+//    virtual_flash_write(0, (uint32_t)s, 12);
+//
+//    virtual_flash_write((uint32_t *)0x4f6bf4, (uint32_t)&superblock, sizeof(uint32_t)*3);
+
+    HAL_TIM_Base_Start_IT(htim);
+  }
+
+}
+
+
+
 // DMA WRITE CALLBACK
 //void DMATransferComplete(DMA_HandleTypeDef *hdma){
 //  if(hdma->Instance == DMA1_Stream6){
