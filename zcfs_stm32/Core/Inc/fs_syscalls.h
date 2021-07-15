@@ -20,12 +20,12 @@
 #define zcfs_init _myinit
 
 int _myinit(UART_HandleTypeDef *huart, DMA_HandleTypeDef *hdma_usart_tx, DMA_HandleTypeDef *hdma_usart_rx);
-int _isatty(int fd);
-int _write(int fd, char* ptr, int len);
-int _open(char* file_name);
-int _close(int fd);
-int _lseek(int fd, int ptr, int dir);
-int _read(int fd, char* ptr, int len);
-int _fstat(int fd, struct stat* st);
+uint32_t _write(int fd, char* ptr, int len);
+uint32_t _open(char* file_name);
+int _close(uint32_t fd);
+uint32_t _read(uint32_t fd, char *data, int start, int stop);
+//int _isatty(int fd);
+//int _fstat(int fd, struct stat* st);
+//int _lseek(int fd, int ptr, int dir);
 
 #endif /* INC_FS_SYSCALLS_H_ */
