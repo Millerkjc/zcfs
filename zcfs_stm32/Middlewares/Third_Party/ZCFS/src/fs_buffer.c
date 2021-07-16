@@ -73,21 +73,9 @@ HAL_StatusTypeDef fbuffer_insert(file_buffer_t* fbuf, char *data, uint32_t len){
  * the data will be write in memory and the buffer cleared
  */
 void fbuffer_flush(file_buffer_t* fbuf){
-
 	if(fbuf){
-		// TODO write in mem
-		// TODO dinode_write
-
-		//char* end = "\0";
-
-		//strcat(fbuf->file_buffer, end);
 		dinode_write(fbuf->fd, fbuf->file_buffer, fbuf->bfill);
-
 		free(fbuf->file_buffer);
-//		fbuf->file_buffer = NULL;
-//		fbuffer_reset(fbuf);
-//		free(fbuf);
-//		fbuf = NULL;
 	}
 }
 
@@ -148,7 +136,7 @@ HAL_StatusTypeDef buffer_insert(main_buffer_t* mbuf, uint32_t fd, char *data, ui
 	/*
 	 * 	looking for fbuf into the list
 	 */
-	if (! mbuf->list[fd]){ // or if mbuf->files <= id
+	if (!mbuf->list[fd]){ // or if mbuf->files <= id
 		mbuf->files += 1;
 		mbuf->list[fd] = fbuffer_init(mbuf->list[fd], fd);
 	}
@@ -199,36 +187,25 @@ void pending_fd_remove(uint32_t fd){
 
 
 
-///*
-// * return NULL quando file non è stato trovato
-// */
-//uint32_t* pending_dinode_get(uint32_t idx){
-//	if(idx != -1){
-//		return (uint32_t *)linked_list_get(pbuffi->last_dinode, idx);
-//	}
-//
-//	return NULL;
-//}
-
-
-//uint32_t* pending_dinode_get(uint32_t idx){
-//	uint32_t idx = linked_list_find_fd(pbuffi->list_new_fd, fd);
-//
-//	if(idx != -1){
-//		return (uint32_t *)linked_list_get(pbuffi->last_dinode, idx);
-//	}
-//
-//	return NULL;
-//}
 
 
 
 
 
+HAL_StatusTypeDef commit_file_buffer(uint32_t fd){
+	if(mbuf->size > 0 && mbuf->list[fd]){
+		mbuf->size -= mbuf->list[fd]->bfill;
+		mbuf->files -= 1;
 
+		fbuffer_flush(mbuf->list[fd]);
+		if(mbuf->list[fd]){
+			free((uint32_t *)mbuf->list[fd]);
+			mbuf->list[fd] = NULL;
+		}
+	}
 
-
-
+	return HAL_OK;
+}
 
 
 
@@ -251,32 +228,35 @@ uint32_t linked_list_find_fd(linked_list_t *list, int fd){
 
 
 
-void linked_list_remove_fd(linked_list_t *list, int fd){
-	list_item_t *prev = NULL;
-	list_item_t *cur = list->head;
 
-	while(cur!=NULL && (uint32_t)cur->data != fd){
+
+void linked_list_remove_fd(linked_list_t *list, int fd){
+	list_item_t *cur = list->head;
+	list_item_t *prev = cur;
+
+	while(cur!=NULL){
+		if((uint32_t)cur->data == fd){
+			prev->next = cur->next;
+
+			if(cur == list->head){
+				list->head = cur->next;
+
+				if(cur == list->tail){
+					list->tail = cur->next;
+				}
+			}
+
+
+			if(cur == list->tail){
+				list->tail = prev;
+			}
+
+
+			free(cur);
+			return;
+		}
 		prev = cur;
 		cur = cur->next;
 	}
 
-	if(cur == NULL){
-		return;
-	}
-
-	if(prev == NULL){
-		list->head = list->head->next;
-	}else{
-		prev->next = cur->next;
-
-		if (prev->next == NULL){
-			list->tail = prev;
-		}
-	}
-
-	free(cur);
 }
-
-
-
-

@@ -15,10 +15,9 @@
 #ifndef INCLUDE_FS_CORE_H_
 #define INCLUDE_FS_CORE_H_
 
-//#define write _write
 #define HEADER_SIZE 9
-#define SERIAL_PKT 0
-#define SERIAL_PKT_HEADER "zcfs_ser_"
+#define CONSOLE_PKT 0
+#define CONSOLE_PKT_HEADER "zcfs_cns_"
 #define WRITE_PKT 1
 #define WRITE_PKT_HEADER "zcfs_wrt_"
 #define READ_PKT 2

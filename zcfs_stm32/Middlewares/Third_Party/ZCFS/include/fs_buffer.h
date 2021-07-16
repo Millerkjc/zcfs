@@ -68,6 +68,6 @@ uint32_t pending_fd_find(uint32_t fd);
 void pending_fd_remove(uint32_t fd);
 uint32_t* pending_dinode_get(uint32_t idx);
 
-
+HAL_StatusTypeDef commit_file_buffer(uint32_t fd);
 
 #endif /* INCLUDE_FS_BUFFER_H_ */

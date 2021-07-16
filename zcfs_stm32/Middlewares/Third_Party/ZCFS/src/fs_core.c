@@ -25,13 +25,15 @@ uint32_t superblock_pointer_t = _VZCFS_DISK_SIZE  - sizeof(superblock_t);
  */
 
 // Pkt functions
-void get_header(char *, uint32_t);
-uint32_t create_packet(char*, uint32_t, uint32_t*, uint32_t, uint32_t);
+void get_header(char *header, uint32_t type);
+uint32_t create_packet_cns(char* pkt, uint32_t data, uint32_t data_len);
+uint32_t create_packet(char* pkt, uint32_t* address_buffer, uint32_t data_buffer, uint32_t data_len);
 uint32_t create_packet_read(char* pkt, uint32_t* address_buffer, uint32_t data_len);
 
 // Read + Write functions
-HAL_StatusTypeDef virtual_flash_write(uint32_t* address, uint32_t data, uint32_t data_len);
-HAL_StatusTypeDef virtual_flash_read(uint32_t* address, uint32_t* data, uint32_t data_len);
+HAL_StatusTypeDef console_write(uint32_t data, uint32_t data_len);
+HAL_StatusTypeDef disk_read(uint32_t* address, uint32_t* data, uint32_t data_len);
+HAL_StatusTypeDef disk_write(uint32_t* address, uint32_t data, uint32_t data_len);
 
 // Superblock
 void update_superblock_metadata();
@@ -52,7 +54,7 @@ void get_header(char *header, uint32_t type){
 
 	switch(type){
 		case 0:
-			strcpy(header, SERIAL_PKT_HEADER);
+			strcpy(header, CONSOLE_PKT_HEADER);
 			break;
 		case 1:
 			strcpy(header, WRITE_PKT_HEADER);
@@ -68,7 +70,7 @@ void get_header(char *header, uint32_t type){
 
 
 void update_superblock_metadata(){
-		virtual_flash_write((uint32_t *)superblock_pointer_t, (uint32_t)&superblock, sizeof(uint32_t)*3);
+	disk_write((uint32_t *)superblock_pointer_t, (uint32_t)&superblock, sizeof(uint32_t)*3);
 }
 
 uint32_t get_inode_addr_to_wrt(uint32_t fd){
@@ -84,12 +86,36 @@ uint32_t get_dinode_addr_to_wrt(){
  * Packet format: HEADER @ RAW_DATA(address:data) @ INODE_INFO(address:data)
  * 		      Es: "zcfs_write_@FLASH#RAW_DATA@INODE#ADDRESS_end"
  */
-uint32_t create_packet(char* pkt, uint32_t type, uint32_t* address_buffer, uint32_t data_buffer, uint32_t data_len){
+uint32_t create_packet_cns(char* pkt, uint32_t data, uint32_t data_len){
 	char *header, *eol;
 	uint32_t size_pkt = 0;
 
 	header = malloc(HEADER_SIZE);
-	get_header(header, type);
+	get_header(header, CONSOLE_PKT);
+
+	eol = malloc(strlen(EOL_PKT));
+	strcpy(eol, EOL_PKT);
+
+	memcpy(pkt, header, HEADER_SIZE);
+	size_pkt += HEADER_SIZE;
+	memcpy(pkt + size_pkt, (uint32_t *)data, data_len);
+	size_pkt += data_len;
+	memcpy(pkt + size_pkt, eol, strlen(EOL_PKT));
+	size_pkt += strlen(EOL_PKT);
+
+	free(header);
+	free(eol);
+
+	return size_pkt;
+}
+
+
+uint32_t create_packet(char* pkt, uint32_t* address_buffer, uint32_t data_buffer, uint32_t data_len){
+	char *header, *eol;
+	uint32_t size_pkt = 0;
+
+	header = malloc(HEADER_SIZE);
+	get_header(header, WRITE_PKT);
 
 	eol = malloc(strlen(EOL_PKT));
 	strcpy(eol, EOL_PKT);
@@ -141,13 +167,39 @@ uint32_t create_packet_read(char* pkt, uint32_t* address_buffer, uint32_t data_l
  * PRIVATE
  * Write data/inode on the disk
  */
-HAL_StatusTypeDef virtual_flash_write(uint32_t* address, uint32_t data, uint32_t data_len){
+HAL_StatusTypeDef console_write(uint32_t data, uint32_t data_len){
+	int pkt_tmp_size = HEADER_SIZE + data_len;
+	char pkt[pkt_tmp_size];
+
+	memset(pkt, 0, HEADER_SIZE + data_len);
+
+	uint32_t size_pkt = create_packet_cns(pkt, data, data_len);
+
+
+	while(HAL_UART_Transmit_DMA(gHuart, (uint8_t*)pkt, size_pkt) != HAL_OK){};
+
+
+	/*
+	 *
+	 * RACE CONDITION pkt[pkt_tmp_size] su USART troppo lenta rispetto al trigger della funzione
+	 * No HAL_Delay a causa di HAL_UART_Transmit_DMA
+	 *
+	 */
+
+	// This must be here! USART writes too fast // 500000/100000!!!
+	for(int i=0; i<100000; i++);
+
+	return HAL_OK;
+}
+
+
+HAL_StatusTypeDef disk_write(uint32_t* address, uint32_t data, uint32_t data_len){
 	int pkt_tmp_size = HEADER_SIZE + sizeof(address) + data_len;
 	char pkt[pkt_tmp_size];
 
 	memset(pkt, 0, HEADER_SIZE + sizeof(address) + data_len);
 
-	uint32_t size_pkt = create_packet(pkt, WRITE_PKT, address, data, data_len);
+	uint32_t size_pkt = create_packet(pkt, address, data, data_len);
 
 	while(HAL_UART_Transmit_DMA(gHuart, (uint8_t*)pkt, size_pkt) != HAL_OK){};
 
@@ -167,7 +219,7 @@ HAL_StatusTypeDef virtual_flash_write(uint32_t* address, uint32_t data, uint32_t
 
 
 
-HAL_StatusTypeDef virtual_flash_read(uint32_t* address, uint32_t* data, uint32_t data_len){
+HAL_StatusTypeDef disk_read(uint32_t* address, uint32_t* data, uint32_t data_len){
 	int pkt_tmp_size = HEADER_SIZE + sizeof(address) + data_len;
 	char pkt[pkt_tmp_size];
 
@@ -185,11 +237,11 @@ HAL_StatusTypeDef virtual_flash_read(uint32_t* address, uint32_t* data, uint32_t
 
 
 void dinode_read(uint32_t* address, uint32_t* dinode){
-	virtual_flash_read(address, dinode, sizeof(idfile_t));
+	disk_read(address, dinode, sizeof(idfile_t));
 }
 
 void data_read(uint32_t* address, char* data, uint32_t data_len){
-	virtual_flash_read(address, (uint32_t*)data, data_len);
+	disk_read(address, (uint32_t*)data, data_len);
 }
 
 
@@ -219,7 +271,7 @@ uint32_t inode_write(char* name, uint32_t time, uint32_t size, uint8_t is_open, 
 	set_ifile(&superblock.inode_list[fd_inode], fd_inode, name, time, size, is_open, last_dinode, next_dinode);
 
 	// Write on disk
-	virtual_flash_write((uint32_t*)get_inode_addr_to_wrt(fd_inode), (uint32_t)&superblock.inode_list[fd_inode], sizeof(ifile_t));
+	disk_write((uint32_t*)get_inode_addr_to_wrt(fd_inode), (uint32_t)&superblock.inode_list[fd_inode], sizeof(ifile_t));
 
 	superblock.next_fd += 1;
 	update_superblock_metadata();
@@ -248,7 +300,7 @@ HAL_StatusTypeDef dinode_write(uint32_t fd, char* data, uint32_t data_len){
 		data_write(data, data_len);
 
 		uint32_t* dinode_addr = (uint32_t *)(superblock.ptr_dinode_address - sizeof(idfile_t));
-		virtual_flash_write(dinode_addr, (uint32_t)&dinode_file, sizeof(idfile_t));
+		disk_write(dinode_addr, (uint32_t)&dinode_file, sizeof(idfile_t));
 
 		if (old_dinode_addr == NULL){
 			/*
@@ -258,7 +310,7 @@ HAL_StatusTypeDef dinode_write(uint32_t fd, char* data, uint32_t data_len){
 			superblock.inode_list[fd].last_dinode = (idfile_t *)dinode_addr;
 			superblock.inode_list[fd].size = data_len;
 			superblock.inode_list[fd].time = HAL_GetTick();
-			virtual_flash_write((uint32_t*)get_inode_addr_to_wrt(fd), (uint32_t)&superblock.inode_list[fd], sizeof(ifile_t));
+			disk_write((uint32_t*)get_inode_addr_to_wrt(fd), (uint32_t)&superblock.inode_list[fd], sizeof(ifile_t));
 
 		}else{
 
@@ -268,7 +320,7 @@ HAL_StatusTypeDef dinode_write(uint32_t fd, char* data, uint32_t data_len){
 			idfile_t old_dinode;
 			dinode_read((uint32_t*)superblock.inode_list[fd].last_dinode, (uint32_t*)&old_dinode);
 			old_dinode.next_dinode = (uint32_t)dinode_addr;
-			virtual_flash_write((uint32_t*)superblock.inode_list[fd].last_dinode, (uint32_t)&old_dinode, sizeof(idfile_t));
+			disk_write((uint32_t*)superblock.inode_list[fd].last_dinode, (uint32_t)&old_dinode, sizeof(idfile_t));
 
 			/*
 			 * UPDATE INODE - LAST DINODE ADDRESS
@@ -276,7 +328,7 @@ HAL_StatusTypeDef dinode_write(uint32_t fd, char* data, uint32_t data_len){
 			superblock.inode_list[fd].last_dinode = (idfile_t *)dinode_addr;
 			superblock.inode_list[fd].size += data_len;
 			superblock.inode_list[fd].time = HAL_GetTick();
-			virtual_flash_write((uint32_t*)get_inode_addr_to_wrt(fd), (uint32_t)&superblock.inode_list[fd], sizeof(ifile_t));
+			disk_write((uint32_t*)get_inode_addr_to_wrt(fd), (uint32_t)&superblock.inode_list[fd], sizeof(ifile_t));
 
 		}
 
@@ -289,7 +341,7 @@ HAL_StatusTypeDef dinode_write(uint32_t fd, char* data, uint32_t data_len){
 
 HAL_StatusTypeDef data_write(char* data, uint32_t data_len){
 
-	virtual_flash_write((uint32_t *)superblock.ptr_data_address, (uint32_t)data, data_len);
+	disk_write((uint32_t *)superblock.ptr_data_address, (uint32_t)data, data_len);
 
 	superblock.ptr_data_address += data_len;
 	update_superblock_metadata();
@@ -308,19 +360,10 @@ void initialize_superblock(){
 	superblock.ptr_data_address = _VZCFS_DISK_START;
 	superblock.ptr_dinode_address = superblock_pointer_t;
 
-	virtual_flash_write((uint32_t *)superblock_pointer_t, (uint32_t)&superblock, sizeof(uint32_t)*16);
+	disk_write((uint32_t *)superblock_pointer_t, (uint32_t)&superblock, sizeof(uint32_t)*16);
 
 	inode_write("STDIN", 0, 0, 1, NULL, NULL);
 	inode_write("STDOUT", 0, 0, 1, NULL, NULL);
-
-
-    /*
-     * TODO
-     * - relazione
-     * - virtual flash write on terminal
-     * - ...
-     */
-
 }
 
 
@@ -335,14 +378,6 @@ void RetargetInit(UART_HandleTypeDef *huart, DMA_HandleTypeDef *hdma_usart_tx, D
   /* Disable I/O buffering for STDOUT stream, so that
    * chars are sent out as soon as they are printed. */
   setvbuf(stdout, NULL, _IONBF, 0);
-}
-
-
-
-// TODO
-HAL_StatusTypeDef virtual_terminal_write(uint32_t data, uint32_t data_len){
-//	return create_packet(SERIAL_PKT, 0x0, data, data_len);
-	return HAL_OK;
 }
 
 
@@ -372,15 +407,13 @@ uint32_t fs_open(char* file_name){
 
 		if(!strncmp(inode->name, file_name, strlen(inode->name))){
 
-			// TODO - NEED TESTS
-
 			if(!inode->is_open){
 
 				/*
 				 * UPDATE INODE on disk
 				 */
 				inode->is_open = 1;
-				virtual_flash_write((uint32_t*)get_inode_addr_to_wrt(inode->fd), (uint32_t)inode, sizeof(ifile_t));
+				disk_write((uint32_t*)get_inode_addr_to_wrt(inode->fd), (uint32_t)inode, sizeof(ifile_t));
 
 				/*
 				 * insert file in pending list
@@ -401,14 +434,11 @@ uint32_t fs_open(char* file_name){
 
 
 HAL_StatusTypeDef fs_close(uint32_t fd){
-	// TODO remove fd from pending buffer
-	// TODO
-
 	if (fd <= STDOUT || fd >= superblock.next_fd){
-		char* msg_error = "";
-		sprintf(msg_error, "Cannot close the following file descriptor: %lu\r\n", fd);
-		fs_error(msg_error);
-		return HAL_ERROR;
+		char *str = "Cannot close the following file descriptor: %lu\r\n";
+		char *msg_error = malloc(strlen(str));
+		sprintf(msg_error, str, fd);
+		return fs_error(msg_error);
 	}
 
 
@@ -417,18 +447,18 @@ HAL_StatusTypeDef fs_close(uint32_t fd){
 	 */
 	uint32_t idx_fd_file = pending_fd_find(fd);
 	if(idx_fd_file == -1){
-		char* msg = "The current file is just closed\r\n";
-		fs_write(STDOUT, msg, strlen(msg));
-		return HAL_OK;
+		return fs_error("The current file is just closed\r\n");
 	}
 
 	ifile_t* inode = &superblock.inode_list[fd];
+
+	commit_file_buffer(fd);
 
 	/*
 	 * UPDATE INODE on disk
 	 */
 	inode->is_open = 0;
-	virtual_flash_write((uint32_t*)get_inode_addr_to_wrt(inode->fd), (uint32_t)&superblock.inode_list[fd], sizeof(ifile_t));
+	disk_write((uint32_t*)get_inode_addr_to_wrt(inode->fd), (uint32_t)&superblock.inode_list[fd], sizeof(ifile_t));
 
 	pending_fd_remove(inode->fd);
 
@@ -438,35 +468,34 @@ HAL_StatusTypeDef fs_close(uint32_t fd){
 
 uint32_t fs_read(uint32_t fd, char *data, int start, int stop){
 	if (fd <= STDOUT || fd >= superblock.next_fd){
-		char* msg_error = "";
-		sprintf(msg_error, "Cannot read the following file descriptor: %lu\r\n", fd);
-		fs_error(msg_error);
-		return HAL_ERROR;
+		char *str = "Cannot read the following file descriptor: %lu\r\n";
+		char *msg_error = malloc(strlen(str));
+		sprintf(msg_error, str, fd);
+		return fs_error(msg_error);
 	}
+
 
 	/*
 	 * If file not in the pending list
 	 */
 	uint32_t idx_fd_file = pending_fd_find(fd);
 	if(idx_fd_file == -1){
-		char* msg = "The current file is closed\r\n";
-		fs_write(STDOUT, msg, strlen(msg));
-		return HAL_OK;
+		fs_error("READ CLOSED\r\n");
+		return fs_error("The current file is closed\r\n");
+	}else{
+		commit_file_buffer(fd);
 	}
-
 
 	ifile_t* inode = &superblock.inode_list[fd];
 
-	if (start > inode->size || stop > inode->size){
-		char* msg_error = "";
-		sprintf(msg_error, "Read file: out of bound\r\n");
-		fs_error(msg_error);
-		return HAL_ERROR;
+	if(!inode->is_open){
+		return fs_error("The current file is closed\r\n");
 	}
 
+	if (start > inode->size || stop > inode->size){
+		return fs_error("Read file: out of bound\r\n");
+	}
 
-//	data = malloc(sizeof(char) * (stop - start));
-//	memset(data, 0, sizeof(char)*(stop - start));
 
 	uint32_t idx_data = 0;
 
@@ -537,7 +566,7 @@ uint32_t fs_write(uint32_t fd, char* ptr, uint32_t len){
 	}
 
 	if (fd == STDOUT){
-		virtual_terminal_write((uint32_t)ptr, len);
+		console_write((uint32_t)ptr, len);
 		return len;
 	}
 
@@ -556,6 +585,11 @@ uint32_t fs_write(uint32_t fd, char* ptr, uint32_t len){
 		  return EIO;
 
 		return len;
+	}else{
+		char *str = "File descriptor %lu not found\r\n";
+		char *msg_error = malloc(strlen(str));
+		sprintf(msg_error, str, fd);
+		return fs_error(msg_error);
 	}
 
 	return -1;
