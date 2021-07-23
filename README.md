@@ -56,6 +56,7 @@ reads the the file (entirely or not), only if the file is opened.
 
 ## Full system schema
 Below the image with the entire disk/memory structure
+
 ![alt text](imgs/inode_dinode_data_pointers.png "full structure")
 
 ## Applications
