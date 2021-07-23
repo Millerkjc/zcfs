@@ -18,14 +18,14 @@
 #include "fs_syscalls.h"
 
 
-int _myinit(UART_HandleTypeDef *huart, DMA_HandleTypeDef *hdma_usart_tx, DMA_HandleTypeDef *hdma_usart_rx){
+int _myinit(UART_HandleTypeDef* huart, DMA_HandleTypeDef* hdma_usart_tx, DMA_HandleTypeDef* hdma_usart_rx){
 	fs_init(huart, hdma_usart_tx, hdma_usart_rx);
 
 	return 1;
 }
 
 
-uint32_t _read(uint32_t fd, char *data, int start, int stop)
+uint32_t _read(uint32_t fd, char* data, int start, int stop)
 {
 	return fs_read(fd, data, start, stop);
 }
