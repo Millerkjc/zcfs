@@ -18,8 +18,8 @@ disk = [b'\x00'] * disk_size
 superblock_address_5MB = 0x4f6bf4
 
 # user gui utilities
-pkts_buffer = []
-pkts_buffer_size = 5
+pkts_buffer = ([], 5)
+console_buffer = ([], 5)
 
 #
 # Signal handler
@@ -59,6 +59,21 @@ def print_sys_configuration():
 
 def print_tty_configuration(args):
     print('port set to:{}{}\nbaudrate set to: {}'.format(' '*5, args_in.tty_port, args_in.tty_speed))
+
+def print_pkt_console(pkt):
+    # pkt header
+    header = pkt[:header_size]
+    pkt_data = pkt[header_size : - eol_size]
+    infos = [
+             (  'raw packet',       pkt),
+             (  'pkt header',    header),
+             (    'pkt body',  pkt_data)
+            ]
+    inf_max_len = len(max([s for (s,d) in infos], key=len))
+
+    for s,d in infos:
+        print(('{}'.format(s)).rjust(inf_max_len) + ': {}'.format(d))
+    print()
 
 def print_pkt_metadata(pkt):
     # pkt header
@@ -267,8 +282,8 @@ if __name__ == '__main__':
         while True:
             pkt = ser.read_until(eol_pkt)
 
-            if(len(pkt) < 50):
-                print_pkt_metadata(pkt)
+            # if(len(pkt) < 50):
+            #     print_pkt_metadata(pkt)
 
             pkt_data = get_data_pkt(pkt)
             disk_addr = get_addr_pkt_wrt(pkt)
@@ -280,9 +295,14 @@ if __name__ == '__main__':
             #print_superblock(128)
 
 
-            if pkt[:header_size] != b'zcfs_rdx_':
+            if pkt[:header_size] == b'zcfs_wrt_':
                 write_to_disk(int(disk_addr, 16), pkt_data)
-                print_pkt_metadata(pkt)
+                # print_pkt_metadata(pkt)
+            elif pkt[:header_size] == b'zcfs_cns_':
+                print('#'*20);
+                print('### CONSOLE PACKEEEET ###');
+                print('#'*20);
+                print_pkt_console(pkt)
             else:
                 print("==== pkt read arrived")
                 print("START WRITING")
@@ -291,8 +311,8 @@ if __name__ == '__main__':
                 end = get_data_pkt(pkt)
                 end_2 = '0x' +''.join(['{:02x}'.format(x) for x in end[::-1]])
 
-                print("s - e:", start, ", ", end_2)
-                print("d: ", b''.join(disk[int(start,16):int(start,16) + int(end_2,16)]))
+                #print("s - e:", start, ", ", end_2)
+                #print("d: ", b''.join(disk[int(start,16):int(start,16) + int(end_2,16)]))
 
                 #print('start: ', start, ", t:", type(start), ", int: ", int(start,16))
                 #print('end_2: ', end_2, ", t:", type(end_2), ", int: ", int(end_2,16))
@@ -300,11 +320,11 @@ if __name__ == '__main__':
                 ser.write(b''.join(disk[int(start,16):int(start,16) + int(end_2,16)]))
                 print("STOP WRITING")
 
-            print('DATA')
-            print_data()
-            print('DINODE')
-            print_dinode(12)
-            print_superblock(256)
+            # print('DATA')
+            # print_data()
+            # print('DINODE')
+            # print_dinode(12)
+            # print_superblock(256)
             
     except Exception as e:
         e.printStackTrace()
