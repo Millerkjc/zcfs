@@ -193,38 +193,6 @@ HAL_StatusTypeDef console_write(uint32_t data, uint32_t data_len){
 }
 
 
-//HAL_StatusTypeDef disk_write_partitioned(uint32_t* address, uint32_t data, uint32_t data_len){
-//	int pack_core_size = HEADER_SIZE + sizeof(address) + EOL_SIZE;
-//	int offset = 0;
-//
-//	while(data_len > 0){
-//		int body_pkt_size = data_len < PKT_LIMIT ? data_len : PKT_LIMIT;
-//		int size_pkt = pack_core_size + body_pkt_size;
-//		char *pkt = malloc(size_pkt);
-//
-//		memset(pkt, 0, size_pkt);
-//
-//		uint32_t size_pkt_new = create_packet(pkt, (uint32_t*)(((uint32_t)address)+offset), data+offset, body_pkt_size);
-//
-//		int a = 0;
-//		a+=1;
-//
-//		while(HAL_UART_Transmit_DMA(gHuart, (uint8_t*)pkt, size_pkt) != HAL_OK){};
-//
-//		data_len -= body_pkt_size;
-//		offset += body_pkt_size;
-//
-//		for(int i=0; i<100000; i++);
-//
-//		free(pkt);
-//	}
-
-//	return HAL_OK;
-//}
-
-
-
-
 HAL_StatusTypeDef disk_write(uint32_t* address, uint32_t data, uint32_t data_len){
 	int pkt_tmp_size = HEADER_SIZE + sizeof(address) + data_len + EOL_SIZE;
 	char pkt[pkt_tmp_size];
@@ -424,8 +392,6 @@ void fs_init(UART_HandleTypeDef *huart, DMA_HandleTypeDef *hdma_usart_tx, DMA_Ha
 	mbuf = buffer_init(mbuf);
 	pbuffi = pending_buffer_init();
 	initialize_superblock();
-//	glock = malloc(sizeof(mutex_t));
-//	glock->Lock = HAL_UNLOCKED;
 }
 
 

@@ -26,8 +26,6 @@
 #define ERROR_PKT_HEADER "zcfs_err_"
 #define EOL_PKT "_end"
 
-//#define PKT_LIMIT ((uint16_t)0x100)
-
 // FS public functions
 void fs_init(UART_HandleTypeDef *huart, DMA_HandleTypeDef *hdma_usart_tx, DMA_HandleTypeDef *hdma_usart_rx);
 uint32_t fs_open(char* file_name);
@@ -48,7 +46,6 @@ main_buffer_t* mbuf;
 pending_buffer_t* pbuffi;
 DMA_HandleTypeDef *ghdma_usart2_tx;
 DMA_HandleTypeDef *ghdma_usart2_rx;
-//mutex_t *glock;
 
 
 /*

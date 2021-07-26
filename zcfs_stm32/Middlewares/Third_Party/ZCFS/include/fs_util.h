@@ -16,18 +16,7 @@
  * Struct size
  */
 #define _INODE_LIST_LIMIT ((uint32_t)1024)
-
-// 4/16/32 Kbyte - To be parameterized
 #define _BUFFER_SIZE_256B  ((uint16_t)0x100)
-//#define _BUFFER_SIZE_512B  ((uint16_t)0x200)
-//#define _BUFFER_SIZE_1K ((uint16_t)0x400)
-//#define _BUFFER_SIZE_2K ((uint16_t)0x800)
-
-
-//typedef struct mutex {
-//	int Lock;
-//} mutex_t;
-
 
 typedef struct list_item {
     void *data;

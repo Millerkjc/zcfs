@@ -105,7 +105,6 @@ int main(void)
   /* USER CODE BEGIN 2 */
 
 
-
   zcfs_init(&huart2, &hdma_usart2_tx, &hdma_usart2_rx);
 
   HAL_TIM_Base_Init(&htim6);
@@ -125,14 +124,27 @@ int main(void)
 //  char *s2 = "hello world";
 //  char *s3 = "secondo file RULES";
 //  char *s4 = "TRIIIIIIIII";
-
-
+//
+//
 //  uint32_t fd_test = zcfs_open("wrt0");
 //  uint32_t fd_test_2 = zcfs_open("test0");
 //  uint32_t fd_test_3 = zcfs_open("file3");
-  uint32_t fd_mamma = zcfs_open("mamm");
-
-
+//  uint32_t fd_mamma = zcfs_open("mamm");
+//
+//
+//
+//  zcfs_write(fd_test, s, strlen(s));
+//  zcfs_write(fd_test, s2, strlen(s2));
+//  zcfs_write(fd_test, s3, strlen(s3));
+//  zcfs_write(fd_test, s, strlen(s));
+//  zcfs_write(fd_test, s, strlen(s));
+//  zcfs_write(fd_test, s, strlen(s));
+//
+//
+//
+//
+//
+//
 //  zcfs_write(fd_test, s, strlen(s));
 //  zcfs_write(fd_test, s2, strlen(s2));
 //  zcfs_write(fd_test_2, s2, strlen(s2));
@@ -144,53 +156,55 @@ int main(void)
 //  zcfs_write(fd_test_2, s3, strlen(s3));
 //  zcfs_write(fd_test_3, s4, strlen(s4));
 ////  buffer_flush(mbuf);
-
-  char *s_ = "da tommy: ";
-  fs_write(fd_mamma, s_, strlen(s_));
-//  buffer_flush(mbuf);
-
-
-//  HAL_Delay(2000);
-//  //for(int i=0; i<2000000; i++);
-//  fs_write(fd_mamma, s_, strlen(s_));
 //
-//  HAL_Delay(2000);
-////  for(int i=0; i<2000000; i++);
+//  char *s_ = "da tommy: ";
 //  fs_write(fd_mamma, s_, strlen(s_));
+////  buffer_flush(mbuf);
 //
-//  HAL_Delay(2000);
-////  for(int i=0; i<2000000; i++);
+//
+////  HAL_Delay(2000);
+////  //for(int i=0; i<2000000; i++);
+//  fs_write(fd_mamma, s_, strlen(s_));
+////
+////  HAL_Delay(2000);
+//////  for(int i=0; i<2000000; i++);
+//  fs_write(fd_mamma, s_, strlen(s_));
+////
+////  HAL_Delay(2000);
+//////  for(int i=0; i<2000000; i++);
 //  char *nuova = "nuova";
 //  char *xyz = "xyzzx";
 //  zcfs_write(fd_test_2, nuova, strlen(nuova));
 //  zcfs_write(fd_test_3, xyz, strlen(xyz));
 //  zcfs_write(fd_test_3, nuova, strlen(nuova));
-
-
-  zcfs_close(fd_mamma);
-  char *rmamma = malloc(100);
-  memset(rmamma, 0, 100);
-  zcfs_read(fd_mamma, rmamma, 0, 2);
-  zcfs_open("mamm");
-  zcfs_read(fd_mamma, rmamma, 0, 2);
-  zcfs_read(fd_mamma, rmamma, -1, 11111111);
-
-  /*
-   * TODO
-   * - tests on closed files!!!
-   * TODO
-   * - relazione
-   * - ...
-   */
+//
+//
+//  zcfs_close(fd_mamma);
+//  char *rmamma = malloc(100);
+//  memset(rmamma, 0, 100);
+//  zcfs_read(fd_mamma, rmamma, 0, 2);
+//  zcfs_open("mamm");
+//  zcfs_read(fd_mamma, rmamma, 0, 2);
+//  zcfs_read(fd_mamma, rmamma, -1, 11111111);
 
 
 
 
 
 
+  uint32_t dr0n3_test = zcfs_open("dr0n3");
+  char *str = malloc(101);
+  memset(str , 0, 101);
+  memcpy(str, "AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA", 100);
 
-
-
+  for(int i=0; i<20; i++){
+	zcfs_write(dr0n3_test, str, strlen(str));
+	zcfs_write(dr0n3_test, str, strlen(str));
+	zcfs_write(dr0n3_test, str, strlen(str));
+	zcfs_write(dr0n3_test, str, strlen(str));
+	zcfs_write(dr0n3_test, str, strlen(str));
+    HAL_Delay(500);
+  }
 
   /* USER CODE END 2 */
 
@@ -380,7 +394,8 @@ void HAL_TIM_PeriodElapsedCallback(TIM_HandleTypeDef *htim) {
     HAL_TIM_Base_Stop_IT(htim);
 
     HAL_GPIO_TogglePin(GPIOD, GPIO_PIN_14);
-    buffer_flush(mbuf);
+
+  	buffer_flush(mbuf);
     HAL_GPIO_TogglePin(GPIOD, GPIO_PIN_12);
 
 //    char s[30] = "ciao loop";

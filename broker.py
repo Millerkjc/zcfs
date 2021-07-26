@@ -297,7 +297,7 @@ if __name__ == '__main__':
 
             if pkt[:header_size] == b'zcfs_wrt_':
                 write_to_disk(int(disk_addr, 16), pkt_data)
-                # print_pkt_metadata(pkt)
+                print_pkt_metadata(pkt)
             elif pkt[:header_size] == b'zcfs_cns_':
                 print('#'*20);
                 print('### CONSOLE PACKEEEET ###');
@@ -320,11 +320,11 @@ if __name__ == '__main__':
                 ser.write(b''.join(disk[int(start,16):int(start,16) + int(end_2,16)]))
                 print("STOP WRITING")
 
-            # print('DATA')
-            # print_data()
-            # print('DINODE')
-            # print_dinode(12)
-            # print_superblock(256)
+            print('DATA')
+            print_data()
+            print('DINODE')
+            print_dinode(12)
+            print_superblock(256)
             
     except Exception as e:
         e.printStackTrace()

@@ -130,9 +130,7 @@ void buffer_flush(main_buffer_t* mbuf){
 HAL_StatusTypeDef buffer_insert(main_buffer_t* mbuf, uint32_t fd, char *data, uint32_t len){
 	if(mbuf->size + len >= _BUFFER_SIZE){
 		// Flush buffer
-//		__HAL_LOCK(glock);
 		buffer_flush(mbuf);
-//		__HAL_UNLOCK(glock);
 	}
 
 	/*
