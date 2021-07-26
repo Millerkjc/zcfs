@@ -18,6 +18,10 @@
 #define _INODE_LIST_LIMIT ((uint32_t)1024)
 #define _BUFFER_SIZE_256B  ((uint16_t)0x100)
 
+typedef struct mutex {
+	int Lock;
+} mutex_t;
+
 typedef struct list_item {
     void *data;
     void *next;

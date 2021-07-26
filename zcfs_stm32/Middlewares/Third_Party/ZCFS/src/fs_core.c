@@ -203,6 +203,7 @@ HAL_StatusTypeDef disk_write(uint32_t* address, uint32_t data, uint32_t data_len
 
 	while(HAL_UART_Transmit_DMA(gHuart, (uint8_t*)pkt, size_pkt) != HAL_OK){};
 
+//	HAL_UART_Transmit(gHuart, (uint8_t*)pkt, size_pkt, HAL_MAX_DELAY);
 
 	/*
 	 *
@@ -392,6 +393,9 @@ void fs_init(UART_HandleTypeDef *huart, DMA_HandleTypeDef *hdma_usart_tx, DMA_Ha
 	mbuf = buffer_init(mbuf);
 	pbuffi = pending_buffer_init();
 	initialize_superblock();
+	glock = malloc(sizeof(mutex_t));
+	glock->Lock = HAL_UNLOCKED;
+
 }
 
 

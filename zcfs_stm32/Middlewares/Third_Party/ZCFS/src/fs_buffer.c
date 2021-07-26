@@ -107,6 +107,8 @@ main_buffer_t* buffer_init(main_buffer_t* mbuf){
  * mbuf: the main buffer
  */
 void buffer_flush(main_buffer_t* mbuf){
+	__HAL_LOCK(glock);
+
 	if(mbuf->size != 0){
 		for(int b=2; b < superblock.next_fd; b++){
 			fbuffer_flush(mbuf->list[b]);
@@ -119,6 +121,9 @@ void buffer_flush(main_buffer_t* mbuf){
 		mbuf->files=0;
 		mbuf->size=0;
 	}
+
+	__HAL_UNLOCK(glock);
+
 }
 
 /*

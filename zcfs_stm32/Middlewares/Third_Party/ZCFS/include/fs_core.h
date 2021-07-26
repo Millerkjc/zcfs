@@ -46,6 +46,7 @@ main_buffer_t* mbuf;
 pending_buffer_t* pbuffi;
 DMA_HandleTypeDef *ghdma_usart2_tx;
 DMA_HandleTypeDef *ghdma_usart2_rx;
+mutex_t *glock;
 
 
 /*
