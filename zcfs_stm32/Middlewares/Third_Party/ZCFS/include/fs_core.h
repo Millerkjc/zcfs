@@ -27,7 +27,7 @@
 #define EOL_PKT "_end"
 
 // FS public functions
-void fs_init(UART_HandleTypeDef *huart, DMA_HandleTypeDef *hdma_usart_tx, DMA_HandleTypeDef *hdma_usart_rx);
+void fs_init(UART_HandleTypeDef* huart, DMA_HandleTypeDef* hdma_usart_tx, DMA_HandleTypeDef* hdma_usart_rx);
 uint32_t fs_open(char* file_name);
 HAL_StatusTypeDef fs_close(uint32_t fd);
 uint32_t fs_read(uint32_t fd, char *data, int start, int stop);
@@ -47,6 +47,7 @@ pending_buffer_t* pbuffi;
 DMA_HandleTypeDef *ghdma_usart2_tx;
 DMA_HandleTypeDef *ghdma_usart2_rx;
 mutex_t *glock;
+uint32_t start_time;
 
 
 /*

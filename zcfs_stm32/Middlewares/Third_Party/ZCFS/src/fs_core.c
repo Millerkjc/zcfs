@@ -315,7 +315,7 @@ HAL_StatusTypeDef dinode_write(uint32_t fd, char* data, uint32_t data_len){
 			superblock.inode_list[fd].next_dinode = (idfile_t *)dinode_addr;
 			superblock.inode_list[fd].last_dinode = (idfile_t *)dinode_addr;
 			superblock.inode_list[fd].size = data_len;
-			superblock.inode_list[fd].time = HAL_GetTick();
+			superblock.inode_list[fd].time = HAL_GetTick() - start_time;
 			disk_write((uint32_t*)get_inode_addr_to_wrt(fd), (uint32_t)&superblock.inode_list[fd], sizeof(ifile_t));
 
 		}else{
@@ -333,7 +333,7 @@ HAL_StatusTypeDef dinode_write(uint32_t fd, char* data, uint32_t data_len){
 			 */
 			superblock.inode_list[fd].last_dinode = (idfile_t *)dinode_addr;
 			superblock.inode_list[fd].size += data_len;
-			superblock.inode_list[fd].time = HAL_GetTick();
+			superblock.inode_list[fd].time = HAL_GetTick() - start_time;
 			disk_write((uint32_t*)get_inode_addr_to_wrt(fd), (uint32_t)&superblock.inode_list[fd], sizeof(ifile_t));
 
 		}
@@ -393,14 +393,14 @@ void RetargetInit(UART_HandleTypeDef *huart, DMA_HandleTypeDef *hdma_usart_tx, D
  * Public methods
  */
 
-void fs_init(UART_HandleTypeDef *huart, DMA_HandleTypeDef *hdma_usart_tx, DMA_HandleTypeDef *hdma_usart_rx){
+void fs_init(UART_HandleTypeDef* huart, DMA_HandleTypeDef* hdma_usart_tx, DMA_HandleTypeDef* hdma_usart_rx){
 	RetargetInit(huart, hdma_usart_tx, hdma_usart_rx);
 	mbuf = buffer_init(mbuf);
 	pbuffi = pending_buffer_init();
 	initialize_superblock();
 	glock = malloc(sizeof(mutex_t));
 	glock->Lock = HAL_UNLOCKED;
-
+	start_time = HAL_GetTick();
 }
 
 
@@ -439,7 +439,7 @@ uint32_t fs_open(char* file_name){
 	}
 
 
-	return inode_write(file_name, 0, 0, 1, NULL, NULL);
+	return inode_write(file_name, HAL_GetTick() - start_time, 0, 1, NULL, NULL);
 }
 
 
