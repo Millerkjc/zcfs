@@ -25,6 +25,8 @@
 #include <stdio.h>
 #include <string.h>
 #include "fs_syscalls.h"
+#include "../Tests/Inc/tests.h"
+
 //#include "fs_core.h"
 
 /* USER CODE END Includes */
@@ -189,22 +191,11 @@ int main(void)
 
 
 
+/*
+ * TESTS
+ */
+//test_write_long();
 
-
-
-  uint32_t dr0n3_test = zcfs_open("dr0n3");
-  char *str = malloc(101);
-  memset(str , 0, 101);
-  memcpy(str, "AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA", 100);
-
-  for(int i=0; i<20; i++){
-	zcfs_write(dr0n3_test, str, strlen(str));
-	zcfs_write(dr0n3_test, str, strlen(str));
-	zcfs_write(dr0n3_test, str, strlen(str));
-	zcfs_write(dr0n3_test, str, strlen(str));
-	zcfs_write(dr0n3_test, str, strlen(str));
-    HAL_Delay(500);
-  }
 
   /* USER CODE END 2 */
 
