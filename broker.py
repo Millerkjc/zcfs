@@ -100,16 +100,9 @@ def dump_disk():
     f.close()
 
 
-
-
-
-
-
-
 #########################
 ### GENERAL UTILITIES ###
 #########################
-
 
 #####
 ### Print Information
@@ -130,9 +123,15 @@ def print_sys_configuration():
     print()
 
 
+#####
+### Print the tty configuration (port and baudrate)
+#####
 def print_tty_configuration(args_in):
     print('port set to:{}{}\nbaudrate set to: {}'.format(' '*5, args_in.tty_port, args_in.tty_speed))
 
+#####
+### Print the information console packets
+#####
 def print_pkt_console(pkt):
     # pkt header
     header = pkt[:header_size]
@@ -148,6 +147,9 @@ def print_pkt_console(pkt):
         print(('{}'.format(s)).rjust(inf_max_len) + ': {}'.format(d))
     print()
 
+#####
+### Print all pkt metadata information
+#####
 def print_pkt_metadata(pkt):
     # pkt header
     header = pkt[:header_size]
@@ -243,23 +245,29 @@ def partial_print(p_disk_size=8):
 ### Print superblock
 #####
 def print_superblock(stop=64, p_disk_size=8):
-    print('Superblock:')
+    print('\n=== SUPERBLOCK')
+    print('- Start')
     print_disk(superblock_address_5MB, superblock_address_5MB + stop, p_disk_size, 1)
+    print('- End')
 
 #####
 ### Print all dinodes
 #####
 def print_dinode(p_disk_size=8):
+    print('\n=== Print all dinodes')
+    print('- Start')
     dinode_addr = get_last_dinode_address()
     # print('last data inode_address:', hex(dinode_addr))
     print_disk(dinode_addr, superblock_address_5MB, p_disk_size)
+    print('- End')
 
 #####
 ### Print all data
 #####
 def print_data(p_disk_size=8):
     data_addr = get_last_data_address()
-    print('last data_address:', hex(data_addr))
+    print('\n=== Last data address')
+    print(hex(data_addr))
     print_disk(0, data_addr, p_disk_size, 1)
 
 
@@ -305,10 +313,13 @@ if __name__ == '__main__':
     
     #if args.verbose:
     print_tty_configuration(args)
-
     setup_env_store_disk()
 
-    sys.exit(123)
+
+    '''
+        Usage example:
+            python3 broker.py /dev/ttyUSB0 38400
+    '''
 
     try:
         ser = serial.Serial(args.tty_port, args.tty_speed, timeout=None, xonxoff=False, rtscts=False, dsrdtr=False)
@@ -324,17 +335,9 @@ if __name__ == '__main__':
             pkt = ser.read_until(eol_pkt)
 
 
-            # if(len(pkt) < 50):
-            #     print_pkt_metadata(pkt)
-
-            pkt_data = get_data_pkt(pkt)
-            disk_addr = get_addr_pkt_wrt(pkt)
-            #print_disk(16)
-            #partial_print()
-            #print(pkt[:128])
-            # print_dinode()
-            # print_superblock(64)
-            #print_superblock(128)
+            '''
+                === PKTs MANAGEMENT
+            '''
 
             if pkt[:header_size] == b'zcfs_wrt_':
                 '''
@@ -344,10 +347,12 @@ if __name__ == '__main__':
                 print("==== write pkt arrived")
                 print('- Start')
                 
+                disk_addr = get_addr_pkt_wrt(pkt)
+                pkt_data = get_data_pkt(pkt)
                 write_to_disk(int(disk_addr, 16), pkt_data)
                 print_pkt_metadata(pkt)
                 
-                print('- ...End')
+                print('- End')
 
             elif pkt[:header_size] == b'zcfs_cns_':
                 '''
@@ -361,7 +366,7 @@ if __name__ == '__main__':
                 
                 print_pkt_console(pkt)
 
-                print('- ...End')
+                print('- End')
 
             else:
                 '''
@@ -378,11 +383,14 @@ if __name__ == '__main__':
 
                 ser.write(b''.join(disk[int(start,16):int(start,16) + int(end_2,16)]))
 
-                print('- ...End')
+                print('- End')
 
-            print('DATA')
+            '''
+                - print all data
+                - print all dinodes
+                - print 32*8 bytes of superblock
+            '''
             print_data()
-            print('DINODE')
             print_dinode(12)
             print_superblock(256)
             

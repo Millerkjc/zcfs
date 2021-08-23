@@ -21,17 +21,17 @@
  * Buffers: main buffer and buffer of the files
  */
 typedef struct __attribute__((__packed__)) buffer_file{
-	uint32_t fd;		/* file identifier    		*/
-	char* file_buffer;	/* buffer of the file 		*/
-	uint32_t bfill;		/* buffer filled 			*/
-	uint32_t size;		/* size of the file buffer  */
+	uint32_t fd;		// file identifier
+	char* file_buffer;	// buffer of the file
+	uint32_t bfill;		// buffer filled
+	uint32_t size;		// size of the file buffer
 } file_buffer_t;
 
 // TODO change from list to another struct (es. tree, ...)
 typedef struct __attribute__((__packed__)) buffer{
-	file_buffer_t* list[_INODE_LIST_LIMIT];	/* list of all files */
-	uint32_t files;							/* number of files	 */
-	uint32_t size;							/* size of the files */
+	file_buffer_t* list[_INODE_LIST_LIMIT];	// list of all files
+	uint32_t files;							// number of files
+	uint32_t size;							// size of the files
 } main_buffer_t;
 
 
