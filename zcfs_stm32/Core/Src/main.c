@@ -194,7 +194,11 @@ int main(void)
 /*
  * TESTS
  */
-//test_write_long();
+//  demo_0();
+//  demo_1();
+  demo_2();
+
+//  test_write_long();
 
 
   /* USER CODE END 2 */

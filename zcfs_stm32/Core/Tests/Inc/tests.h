@@ -10,5 +10,8 @@
 
 
 void test_write_long();
+void demo_0();
+void demo_1();
+void demo_2();
 
 #endif /* SRC_TESTS_TESTS_H_ */
