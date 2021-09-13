@@ -522,7 +522,7 @@ uint32_t fs_read(uint32_t fd, char *data, int start, int stop){
 			data_read((uint32_t*)dinode.data_ptr, tmp, dinode.data_len);
 
 
-			uint32_t read_chunk_start;
+			uint32_t read_chunk_start = 0;
 			uint32_t read_chunk_until;
 
 			/*
@@ -530,9 +530,7 @@ uint32_t fs_read(uint32_t fd, char *data, int start, int stop){
 			 * 0 	  if start < 0
 			 * start  else
 			 */
-			if (start < 0){
-				read_chunk_start = 0;
-			}else{
+			if (start > 0){
 				read_chunk_start = start;
 			}
 
@@ -547,7 +545,7 @@ uint32_t fs_read(uint32_t fd, char *data, int start, int stop){
 				read_chunk_until = stop;
 			}
 
-			memcpy(&data[idx_data], &tmp[read_chunk_start], read_chunk_until);
+			memcpy(&data[idx_data], &tmp[read_chunk_start], read_chunk_until - read_chunk_start);
 
 			idx_data += read_chunk_until;
 		}
