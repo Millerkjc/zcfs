@@ -53,7 +53,7 @@ DMA_HandleTypeDef hdma_usart2_tx;
 DMA_HandleTypeDef hdma_usart2_rx;
 
 /* USER CODE BEGIN PV */
-char *msg = "Hello STM32 Lovers! This message is transferred in DMA(IT) Mode.\r\n";
+
 /* USER CODE END PV */
 
 /* Private function prototypes -----------------------------------------------*/
@@ -63,8 +63,7 @@ static void MX_DMA_Init(void);
 static void MX_USART2_UART_Init(void);
 static void MX_TIM6_Init(void);
 /* USER CODE BEGIN PFP */
-//void DMATransferComplete(DMA_HandleTypeDef *hdma);
-//void DMAReceiveComplete(DMA_HandleTypeDef *hdma);
+
 /* USER CODE END PFP */
 
 /* Private user code ---------------------------------------------------------*/
@@ -113,91 +112,12 @@ int main(void)
   HAL_TIM_Base_Start_IT(&htim6); //Start the timer
 
 
-//  char *hello =  "HELLO STDOUT!!!";
-//  fs_write(0, hello, strlen(hello));
-//  fs_write(1, hello, strlen(hello));
-//  fs_write(90, hello, strlen(hello));
-
-//  fs_write(2, hello, strlen(hello));
-
-
-
-//  char *s = "AAAAAAABBBBB";
-//  char *s2 = "hello world";
-//  char *s3 = "secondo file RULES";
-//  char *s4 = "TRIIIIIIIII";
-//
-//
-//  uint32_t fd_test = zcfs_open("wrt0");
-//  uint32_t fd_test_2 = zcfs_open("test0");
-//  uint32_t fd_test_3 = zcfs_open("file3");
-//  uint32_t fd_mamma = zcfs_open("mamm");
-//
-//
-//
-//  zcfs_write(fd_test, s, strlen(s));
-//  zcfs_write(fd_test, s2, strlen(s2));
-//  zcfs_write(fd_test, s3, strlen(s3));
-//  zcfs_write(fd_test, s, strlen(s));
-//  zcfs_write(fd_test, s, strlen(s));
-//  zcfs_write(fd_test, s, strlen(s));
-//
-//
-//
-//
-//
-//
-//  zcfs_write(fd_test, s, strlen(s));
-//  zcfs_write(fd_test, s2, strlen(s2));
-//  zcfs_write(fd_test_2, s2, strlen(s2));
-////  buffer_flush(mbuf);
-//  zcfs_write(fd_test_2, s3, strlen(s3));
-//  zcfs_write(fd_test_3, s4, strlen(s4));
-////  buffer_flush(mbuf);
-//  zcfs_write(fd_test, s, strlen(s));
-//  zcfs_write(fd_test_2, s3, strlen(s3));
-//  zcfs_write(fd_test_3, s4, strlen(s4));
-////  buffer_flush(mbuf);
-//
-//  char *s_ = "da tommy: ";
-//  fs_write(fd_mamma, s_, strlen(s_));
-////  buffer_flush(mbuf);
-//
-//
-////  HAL_Delay(2000);
-////  //for(int i=0; i<2000000; i++);
-//  fs_write(fd_mamma, s_, strlen(s_));
-////
-////  HAL_Delay(2000);
-//////  for(int i=0; i<2000000; i++);
-//  fs_write(fd_mamma, s_, strlen(s_));
-////
-////  HAL_Delay(2000);
-//////  for(int i=0; i<2000000; i++);
-//  char *nuova = "nuova";
-//  char *xyz = "xyzzx";
-//  zcfs_write(fd_test_2, nuova, strlen(nuova));
-//  zcfs_write(fd_test_3, xyz, strlen(xyz));
-//  zcfs_write(fd_test_3, nuova, strlen(nuova));
-//
-//
-//  zcfs_close(fd_mamma);
-//  char *rmamma = malloc(100);
-//  memset(rmamma, 0, 100);
-//  zcfs_read(fd_mamma, rmamma, 0, 2);
-//  zcfs_open("mamm");
-//  zcfs_read(fd_mamma, rmamma, 0, 2);
-//  zcfs_read(fd_mamma, rmamma, -1, 11111111);
-
-
-
 /*
  * TESTS
  */
 //  demo_0();
 //  demo_1();
-  demo_2();
-
+//  demo_2();
 //  test_write_long();
 
 
