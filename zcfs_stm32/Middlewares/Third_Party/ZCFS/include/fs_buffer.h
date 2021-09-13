@@ -47,7 +47,7 @@ typedef struct __attribute__((__packed__)) inode_buffer{
 // main buffer
 void buffer_reset(main_buffer_t* mbuf);
 main_buffer_t* buffer_init(main_buffer_t* mbuf);
-void buffer_flush();
+void buffer_flush(main_buffer_t* mbuf);
 HAL_StatusTypeDef buffer_insert(main_buffer_t* mbuf, uint32_t fd, char *data, uint32_t len);
 
 // file buffers
