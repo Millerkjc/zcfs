@@ -74,7 +74,7 @@ void update_superblock_metadata(){
 }
 
 uint32_t get_inode_addr_to_wrt(uint32_t fd){
-	return superblock_pointer_t + sizeof(uint32_t)*2 + fd*sizeof(ifile_t);
+	return superblock_pointer_t + sizeof(uint32_t)*3 + fd*sizeof(ifile_t);
 }
 
 uint32_t get_dinode_addr_to_wrt(){
