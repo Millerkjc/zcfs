@@ -308,15 +308,9 @@ void HAL_TIM_PeriodElapsedCallback(TIM_HandleTypeDef *htim) {
   if(htim->Instance == TIM6){
     HAL_TIM_Base_Stop_IT(htim);
 
-    HAL_GPIO_TogglePin(GPIOD, GPIO_PIN_14);
-
+    HAL_GPIO_TogglePin(GPIOD, GPIO_PIN_14); // Green
   	buffer_flush(mbuf);
-    HAL_GPIO_TogglePin(GPIOD, GPIO_PIN_12);
-
-//    char s[30] = "ciao loop";
-//    virtual_flash_write(0, (uint32_t)s, 12);
-//
-//    virtual_flash_write((uint32_t *)0x4f6bf4, (uint32_t)&superblock, sizeof(uint32_t)*3);
+    HAL_GPIO_TogglePin(GPIOD, GPIO_PIN_12); // Red
 
     HAL_TIM_Base_Start_IT(htim);
   }
